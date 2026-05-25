@@ -1015,6 +1015,57 @@ html[data-theme="dark"] .metric-value { color: var(--orange); }
 }
 #auth-token-input:focus { outline: 2px solid var(--orange); border-color: transparent; }
 #auth-error { font-size: 12px; color: var(--red); display: none; }
+
+/* ── POST DETAIL MODAL ─────────────────────────── */
+#post-detail-overlay {
+  position: fixed; inset: 0; z-index: 9000;
+  background: rgba(0,0,0,0.55);
+  display: flex; align-items: center; justify-content: center;
+  backdrop-filter: blur(4px);
+  padding: 20px;
+}
+#post-detail-overlay.hidden { display: none; }
+#post-detail-box {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  width: 100%; max-width: 560px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 24px 72px rgba(0,0,0,0.22);
+  display: flex; flex-direction: column;
+}
+#post-detail-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 20px 24px 14px;
+  border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; background: var(--bg2); z-index: 1;
+  border-radius: 18px 18px 0 0;
+}
+#post-detail-header h3 {
+  font-size: 16px; font-weight: 700; color: var(--text);
+}
+#post-detail-close {
+  width: 30px; height: 30px; border-radius: 8px;
+  border: 1px solid var(--border); background: var(--bg);
+  cursor: pointer; display: flex; align-items: center; justify-content: center;
+  color: var(--text2);
+}
+#post-detail-close:hover { background: var(--bg2); color: var(--text); }
+#post-detail-body { padding: 20px 24px 24px; display: flex; flex-direction: column; gap: 18px; }
+.pd-preview {
+  width: 100%; border-radius: 12px; overflow: hidden;
+  background: var(--bg); border: 1px solid var(--border);
+  max-height: 300px; display: flex; align-items: center; justify-content: center;
+}
+.pd-preview img { width: 100%; max-height: 300px; object-fit: cover; display: block; }
+.pd-preview video { width: 100%; max-height: 300px; }
+.pd-preview-empty { padding: 40px; color: var(--text3); font-size: 13px; text-align: center; }
+.pd-row { display: flex; flex-direction: column; gap: 4px; }
+.pd-label { font-size: 11px; font-weight: 600; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; }
+.pd-value { font-size: 14px; color: var(--text); line-height: 1.55; white-space: pre-wrap; }
+.pd-platforms { display: flex; flex-wrap: wrap; gap: 6px; }
+.pd-actions { display: flex; gap: 10px; padding-top: 4px; border-top: 1px solid var(--border); }
 </style>
 </head>
 <script>
@@ -1302,6 +1353,21 @@ html[data-theme="dark"] .metric-value { color: var(--orange); }
       <i data-lucide="log-in" style="width:15px;height:15px;"></i>
       Entrar
     </button>
+  </div>
+</div>
+
+<!-- POST DETAIL MODAL -->
+<div id="post-detail-overlay" class="hidden" onclick="closePostDetail(event)">
+  <div id="post-detail-box">
+    <div id="post-detail-header">
+      <h3 id="pd-title">Detalhes do Post</h3>
+      <button id="post-detail-close" onclick="closePostDetail()">
+        <i data-lucide="x" style="width:15px;height:15px;"></i>
+      </button>
+    </div>
+    <div id="post-detail-body">
+      <div class="loading"><div class="spinner"></div></div>
+    </div>
   </div>
 </div>
 
@@ -1706,6 +1772,17 @@ function renderTikTokSection(tags) {
 }
 
 // ── POSTS ──────────────────────────────────────────────
+
+/** Converte string ISO UTC → horário de Brasília. Não quebra com microsegundos ou outros formatos. */
+function fmtDate(iso, opts) {
+  if (!iso) return '—';
+  // Remove timezone existente e força Z (UTC)
+  const clean = iso.replace(/\+00:00$/, '').replace(/Z$/, '').replace(/\.\d+$/, '');
+  const d = new Date(clean + 'Z');
+  if (isNaN(d.getTime())) return iso; // fallback: mostra o raw se inválido
+  return d.toLocaleString('pt-BR', Object.assign({ timeZone: 'America/Sao_Paulo' }, opts || {}));
+}
+
 async function loadPosts() {
   const el = document.getElementById('posts-content');
   try {
@@ -1725,25 +1802,103 @@ async function loadPosts() {
 function renderPostRow(p) {
   const platforms = (p.platforms || []).map(pl =>
     `<span class="badge badge-${pl}">${pl}</span>`).join('');
-  // Adiciona 'Z' para garantir que o browser interprete como UTC e converta para horário local
-  const dt = p.scheduled_at ? new Date(p.scheduled_at + 'Z').toLocaleString('pt-BR', {timeZone: 'America/Sao_Paulo'}) : '—';
+  const dt = fmtDate(p.scheduled_at);
   const icon = p.file_type === 'video' ? 'video' : 'image';
+  const statusLabel = p.status === 'posted' ? '✓ Publicado' : p.status === 'failed' ? '✗ Falhou' : p.status === 'partial' ? '⚠ Parcial' : '⏳ Pendente';
 
   return `
-  <div class="post-row">
+  <div class="post-row" style="cursor:pointer" onclick="openPostDetail(${p.id})">
     <div style="color:var(--text3)"><i data-lucide="${icon}" style="width:18px;height:18px;"></i></div>
     <div class="post-row-info">
       <div class="post-row-title">${p.title || p.caption?.substring(0,50) || 'Post sem título'}</div>
       <div class="post-row-meta">${dt}</div>
     </div>
     <div class="post-row-platforms">${platforms}</div>
-    <span class="badge badge-${p.status}">${p.status === 'posted' ? '✓ Publicado' : p.status === 'failed' ? '✗ Falhou' : '⏳ Pendente'}</span>
+    <span class="badge badge-${p.status}">${statusLabel}</span>
     <div class="post-row-actions">
-      <button class="btn btn-danger btn-icon btn-sm" onclick="deletePost(${p.id})">
+      <button class="btn btn-danger btn-icon btn-sm" onclick="event.stopPropagation(); deletePost(${p.id})">
         <i data-lucide="trash-2" style="width:13px;height:13px;"></i>
       </button>
     </div>
   </div>`;
+}
+
+async function openPostDetail(id) {
+  const overlay = document.getElementById('post-detail-overlay');
+  const body    = document.getElementById('post-detail-body');
+  const titleEl = document.getElementById('pd-title');
+  overlay.classList.remove('hidden');
+  body.innerHTML = '<div class="loading"><div class="spinner"></div></div>';
+  titleEl.textContent = 'Carregando...';
+  lucide.createIcons();
+
+  try {
+    const p = await api(`/api/posts/${id}`);
+    titleEl.textContent = p.title || 'Detalhes do Post';
+
+    // Preview da mídia
+    let previewHtml = '';
+    if (p.file_url) {
+      if (p.file_type === 'video') {
+        previewHtml = `<div class="pd-preview"><video controls src="${p.file_url}"></video></div>`;
+      } else {
+        previewHtml = `<div class="pd-preview"><img src="${p.file_url}" alt="preview" loading="lazy" onerror="this.parentElement.innerHTML='<div class=pd-preview-empty>Imagem indisponível</div>'"></div>`;
+      }
+    } else {
+      const icon2 = p.file_type === 'video' ? 'video' : 'image';
+      previewHtml = `<div class="pd-preview"><div class="pd-preview-empty"><i data-lucide="${icon2}" style="width:36px;height:36px;opacity:.4"></i><br>Pré-visualização indisponível</div></div>`;
+    }
+
+    // Status badge
+    const statusLabel = p.status === 'posted' ? '✓ Publicado' : p.status === 'failed' ? '✗ Falhou' : p.status === 'partial' ? '⚠ Parcial' : '⏳ Pendente';
+
+    // Plataformas
+    const plats = (p.platforms || []).map(pl => `<span class="badge badge-${pl}">${pl}</span>`).join('');
+
+    // Post IDs (se já publicado)
+    let postIdsHtml = '';
+    if (p.post_ids && Object.keys(p.post_ids).length) {
+      const rows = Object.entries(p.post_ids).map(([plat, pid]) =>
+        `<div style="font-size:12px;color:var(--text2)">${plat}: <span style="font-family:var(--font-mono);color:var(--text)">${pid}</span></div>`
+      ).join('');
+      postIdsHtml = `<div class="pd-row"><div class="pd-label">IDs de Publicação</div><div class="pd-value" style="font-size:12px">${rows}</div></div>`;
+    }
+
+    body.innerHTML = `
+      ${previewHtml}
+      <div class="pd-row">
+        <div class="pd-label">Agendar para</div>
+        <div class="pd-value" style="font-weight:600">${fmtDate(p.scheduled_at)}</div>
+      </div>
+      <div class="pd-row">
+        <div class="pd-label">Status</div>
+        <div><span class="badge badge-${p.status}">${statusLabel}</span></div>
+      </div>
+      <div class="pd-row">
+        <div class="pd-label">Plataformas</div>
+        <div class="pd-platforms">${plats || '<span style="color:var(--text3);font-size:13px">Nenhuma</span>'}</div>
+      </div>
+      ${p.caption ? `<div class="pd-row"><div class="pd-label">Legenda</div><div class="pd-value">${p.caption}</div></div>` : ''}
+      ${p.hashtags ? `<div class="pd-row"><div class="pd-label">Hashtags</div><div class="pd-value" style="color:var(--orange);font-size:13px">${p.hashtags}</div></div>` : ''}
+      ${postIdsHtml}
+      <div class="pd-actions">
+        <button class="btn btn-danger" style="flex:1;justify-content:center" onclick="deletePost(${p.id}); closePostDetail()">
+          <i data-lucide="trash-2" style="width:14px;height:14px;"></i> Remover Post
+        </button>
+        <button class="btn btn-secondary" style="flex:1;justify-content:center" onclick="closePostDetail()">
+          Fechar
+        </button>
+      </div>`;
+    lucide.createIcons();
+  } catch(e) {
+    body.innerHTML = `<div style="padding:20px;color:var(--red);text-align:center">Erro ao carregar detalhes: ${e.message}</div>`;
+  }
+}
+
+function closePostDetail(e) {
+  // Fecha ao clicar no overlay (fora da caixa) ou ao chamar diretamente
+  if (e && e.target !== document.getElementById('post-detail-overlay')) return;
+  document.getElementById('post-detail-overlay').classList.add('hidden');
 }
 
 async function deletePost(id) {
@@ -1802,7 +1957,7 @@ async function loadMetrics() {
             <div class="post-row">
               <div class="post-row-info">
                 <div class="post-row-title">${p.title || 'Post'}</div>
-                <div class="post-row-meta">${p.scheduled_at ? new Date(p.scheduled_at + 'Z').toLocaleString('pt-BR', {timeZone: 'America/Sao_Paulo', day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'}) : ''}</div>
+                <div class="post-row-meta">${fmtDate(p.scheduled_at, {day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit'})}</div>
               </div>
               <span class="badge badge-${p.platform}">${p.platform}</span>
               <div class="stat-row">

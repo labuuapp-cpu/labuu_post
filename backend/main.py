@@ -7,7 +7,9 @@ from starlette.middleware.base import BaseHTTPMiddleware
 from sqlalchemy.orm import Session
 from datetime import date, datetime
 from typing import Optional, List
-import os, shutil, json, tempfile
+import os, shutil, json, tempfile, logging
+
+logger = logging.getLogger(__name__)
 
 from database import engine, get_db, Base
 from models import BrandConfig, DailyContent, ScheduledPost, PostMetrics, BrandImage, LearnedPattern
@@ -257,22 +259,60 @@ def generate_now(slot: str = "morning", db: Session = Depends(get_db), _=Depends
 
 # ─── Scheduled Posts ───────────────────────────────────────────────────────────
 
+def _post_file_url(p) -> str | None:
+    """URL de preview para o arquivo do post (pública para imagens, None para vídeos — sign sob demanda)."""
+    if not p.file_path:
+        return None
+    filename = os.path.basename(p.file_path)
+    bucket   = "videos" if p.file_type == "video" else "images"
+    if p.file_type == "image":
+        return _public_url(bucket, filename)
+    return None   # vídeos: URL assinada gerada no endpoint de detalhe
+
+
+def _post_signed_url(p) -> str | None:
+    """Gera URL assinada (1h) para vídeos privados no Supabase; pública para imagens."""
+    if not p.file_path:
+        return None
+    filename = os.path.basename(p.file_path)
+    bucket   = "videos" if p.file_type == "video" else "images"
+    if p.file_type == "video" and _sb_storage:
+        try:
+            signed = _sb_storage.from_(bucket).create_signed_url(filename, 3600)
+            return signed.get("signedURL") or signed.get("signed_url") or None
+        except Exception as e:
+            logger.warning(f"Erro ao gerar URL assinada para {filename}: {e}")
+            return None
+    return _public_url(bucket, filename)
+
+
+def _serialize_post(p, file_url=None) -> dict:
+    return {
+        "id":           p.id,
+        "title":        p.title,
+        "caption":      p.caption,
+        "hashtags":     p.hashtags or "",
+        "platforms":    p.platforms or [],
+        "scheduled_at": p.scheduled_at.isoformat() if p.scheduled_at else None,
+        "status":       p.status,
+        "file_type":    p.file_type,
+        "file_url":     file_url,
+        "post_ids":     p.post_ids or {},
+    }
+
+
 @app.get("/api/posts")
 def list_posts(db: Session = Depends(get_db), _=Depends(require_auth)):
     posts = db.query(ScheduledPost).order_by(ScheduledPost.scheduled_at.desc()).limit(50).all()
-    return [
-        {
-            "id":           p.id,
-            "title":        p.title,
-            "caption":      p.caption,
-            "platforms":    p.platforms,
-            "scheduled_at": p.scheduled_at.isoformat() if p.scheduled_at else None,
-            "status":       p.status,
-            "file_type":    p.file_type,
-            "post_ids":     p.post_ids,
-        }
-        for p in posts
-    ]
+    return [_serialize_post(p, file_url=_post_file_url(p)) for p in posts]
+
+
+@app.get("/api/posts/{post_id}")
+def get_post(post_id: int, db: Session = Depends(get_db), _=Depends(require_auth)):
+    p = db.query(ScheduledPost).filter(ScheduledPost.id == post_id).first()
+    if not p:
+        raise HTTPException(404, "Post não encontrado")
+    return _serialize_post(p, file_url=_post_signed_url(p))
 
 
 @app.post("/api/posts/upload")
