@@ -1391,11 +1391,17 @@ function clearToken() { localStorage.removeItem(TOKEN_KEY); }
 
 function showAuthModal() {
   const overlay = document.getElementById('auth-overlay');
+  const alreadyVisible = !overlay.classList.contains('hidden');
   overlay.classList.remove('hidden');
-  document.getElementById('auth-token-input').value = '';
-  document.getElementById('auth-error').style.display = 'none';
-  setTimeout(() => document.getElementById('auth-token-input').focus(), 50);
-  lucide.createIcons();
+  // Só limpa o campo e foca se o modal estava escondido antes
+  // (evita resetar o que o usuário está digitando quando múltiplas
+  //  chamadas API falham com 401 simultaneamente)
+  if (!alreadyVisible) {
+    document.getElementById('auth-token-input').value = '';
+    document.getElementById('auth-error').style.display = 'none';
+    setTimeout(() => document.getElementById('auth-token-input').focus(), 50);
+    lucide.createIcons();
+  }
 }
 
 function hideAuthModal() {
