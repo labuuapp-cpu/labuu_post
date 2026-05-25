@@ -98,8 +98,11 @@ def process_scheduled_posts():
 
 
 def _resolve_post_file(post):
-    """Retorna (local_path, public_url) para o arquivo do post.
-    Suporta Supabase Storage e fallback local."""
+    """Retorna (local_path, public_url, cleanup_temp) para o arquivo do post.
+    - local_path : caminho local temporário (usado por Facebook/TikTok)
+    - public_url : URL acessível publicamente (usada pelo Instagram)
+    - cleanup_temp : True se local_path é temp e deve ser deletado ao final
+    """
     import os, tempfile
     from dotenv import load_dotenv
     load_dotenv()
@@ -114,35 +117,50 @@ def _resolve_post_file(post):
     if SUPABASE_URL and SUPABASE_SVC_KEY:
         from supabase import create_client
         sb = create_client(SUPABASE_URL, SUPABASE_SVC_KEY)
-        # URL pública do Supabase CDN (para Instagram que precisa de URL)
-        public_url = f"{SUPABASE_URL}/storage/v1/object/public/{bucket}/{filename}"
-        # Baixar para temp (Facebook/TikTok precisam de arquivo local)
+
+        # Para imagens (bucket público): URL pública direta
+        # Para vídeos (bucket privado): URL assinada com 1h de validade
+        if bucket == "images":
+            public_url = f"{SUPABASE_URL}/storage/v1/object/public/{bucket}/{filename}"
+        else:
+            try:
+                signed = sb.storage.from_(bucket).create_signed_url(filename, 3600)
+                public_url = signed.get("signedURL") or signed.get("signed_url", "")
+            except Exception as e:
+                logger.error(f"Erro ao gerar URL assinada para {filename}: {e}")
+                public_url = f"{SUPABASE_URL}/storage/v1/object/public/{bucket}/{filename}"
+
+        # Baixar para arquivo temp (Facebook/TikTok precisam de arquivo local)
         try:
             file_bytes = sb.storage.from_(bucket).download(filename)
             ext = filename.rsplit(".", 1)[-1]
             tmp = tempfile.NamedTemporaryFile(suffix=f".{ext}", delete=False)
             tmp.write(file_bytes)
             tmp.close()
-            return tmp.name, public_url, True   # True = deve deletar temp ao final
+            return tmp.name, public_url, True
         except Exception as e:
             logger.error(f"Erro ao baixar {filename} do Supabase: {e}")
             return None, public_url, False
     else:
         # Fallback local
-        local_path  = os.path.abspath(post.file_path)
-        subdir      = bucket
-        public_url  = f"{PUBLIC_BASE}/uploads/{subdir}/{filename}"
+        local_path = os.path.abspath(post.file_path)
+        subdir     = bucket
+        public_url = f"{PUBLIC_BASE}/uploads/{subdir}/{filename}"
         return local_path, public_url, False
 
 
 def _publish_post(post, db):
+    from sqlalchemy.orm.attributes import flag_modified
+
     platforms = post.platforms or []
     post_ids  = {}
+    errors    = []
 
     local_path, public_url, cleanup_temp = _resolve_post_file(post)
     caption = f"{post.caption}\n\n{post.hashtags}" if post.hashtags else post.caption
 
     try:
+        # ── Instagram (usa URL pública/assinada) ──────────────────────────
         if "instagram" in platforms:
             from social.instagram import post_video, post_image
             try:
@@ -151,35 +169,68 @@ def _publish_post(post, db):
                 else:
                     res = post_image(public_url, caption)
                 post_ids["instagram"] = res.get("id", res.get("error", ""))
+                logger.info(f"Post {post.id} → Instagram OK: {post_ids['instagram']}")
             except Exception as e:
                 logger.error(f"Erro Instagram post {post.id}: {e}")
                 post_ids["instagram"] = f"error: {str(e)}"
+                errors.append("instagram")
 
-        if "facebook" in platforms and local_path:
-            from social.facebook import post_video, post_image
-            try:
-                if post.file_type == "video":
-                    res = post_video(local_path, caption, post.title or "")
-                else:
-                    res = post_image(local_path, caption)
-                post_ids["facebook"] = res.get("id", res.get("error", ""))
-            except Exception as e:
-                logger.error(f"Erro Facebook post {post.id}: {e}")
-                post_ids["facebook"] = f"error: {str(e)}"
+        # ── Facebook (precisa de arquivo local) ───────────────────────────
+        if "facebook" in platforms:
+            if local_path:
+                from social.facebook import post_video, post_image
+                try:
+                    if post.file_type == "video":
+                        res = post_video(local_path, caption, post.title or "")
+                    else:
+                        res = post_image(local_path, caption)
+                    post_ids["facebook"] = res.get("id", res.get("error", ""))
+                    logger.info(f"Post {post.id} → Facebook OK: {post_ids['facebook']}")
+                except Exception as e:
+                    logger.error(f"Erro Facebook post {post.id}: {e}")
+                    post_ids["facebook"] = f"error: {str(e)}"
+                    errors.append("facebook")
+            else:
+                logger.error(f"Post {post.id} → Facebook PULADO: arquivo local indisponível")
+                post_ids["facebook"] = "error: arquivo nao disponivel localmente"
+                errors.append("facebook")
 
-        if "tiktok" in platforms and local_path:
-            from social.tiktok import upload_video
-            try:
-                res = upload_video(local_path, caption)
-                post_ids["tiktok"] = res.get("publish_id", res.get("error", "unknown_error"))
-            except Exception as e:
-                logger.error(f"Erro TikTok post {post.id}: {e}")
-                post_ids["tiktok"] = f"error: {str(e)}"
+        # ── TikTok (precisa de arquivo local, só vídeo) ───────────────────
+        if "tiktok" in platforms:
+            if local_path and post.file_type == "video":
+                from social.tiktok import upload_video
+                try:
+                    res = upload_video(local_path, caption)
+                    post_ids["tiktok"] = res.get("publish_id", res.get("error", "unknown_error"))
+                    logger.info(f"Post {post.id} → TikTok OK: {post_ids['tiktok']}")
+                except Exception as e:
+                    logger.error(f"Erro TikTok post {post.id}: {e}")
+                    post_ids["tiktok"] = f"error: {str(e)}"
+                    errors.append("tiktok")
+            elif post.file_type != "video":
+                logger.warning(f"Post {post.id} → TikTok PULADO: apenas vídeos são suportados")
+                post_ids["tiktok"] = "error: apenas videos sao aceitos pelo TikTok"
+            else:
+                logger.error(f"Post {post.id} → TikTok PULADO: arquivo local indisponível")
+                post_ids["tiktok"] = "error: arquivo nao disponivel localmente"
+                errors.append("tiktok")
 
-        post.status  = "posted"
+        # ── Determinar status final ───────────────────────────────────────
+        attempted = [p for p in platforms if p in post_ids]
+        succeeded = [p for p in attempted if not str(post_ids[p]).startswith("error")]
+
+        if not succeeded:
+            post.status = "failed"
+        elif len(errors) > 0:
+            post.status = "partial"   # publicou em pelo menos uma plataforma
+        else:
+            post.status = "posted"
+
+        # flag_modified garante que SQLAlchemy detecta a mudança no JSON
         post.post_ids = post_ids
+        flag_modified(post, "post_ids")
         db.commit()
-        logger.info(f"Post {post.id} processado: {post_ids}")
+        logger.info(f"Post {post.id} status={post.status} ids={post_ids}")
 
     except Exception as e:
         post.status = "failed"
