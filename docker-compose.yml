@@ -1,0 +1,15 @@
+version: "3.9"
+
+services:
+  labuu-bot:
+    build: ./backend
+    container_name: labuu-marketing-bot
+    restart: always
+    ports:
+      - "127.0.0.1:8000:8000"   # só localhost — Nginx faz o proxy público
+    volumes:
+      - ./uploads:/app/uploads   # fallback local (Supabase Storage é o principal)
+      - ./frontend:/app/../frontend
+    env_file:
+      - .env
+    # Não sobrescreva DATABASE_URL aqui — vem do .env

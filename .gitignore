@@ -1,0 +1,32 @@
+# Secrets — NUNCA commitar
+.env
+*.db
+*.sqlite
+
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+env/
+
+# Uploads (arquivos de mídia ficam no Supabase Storage)
+uploads/
+
+# Logs
+*.log
+server.log
+server_err.log
+
+# IDE
+.vscode/
+.idea/
+
+# Claude Code / tooling internals
+.claude/
+.playwright-mcp/
+
+# OS
+.DS_Store
+Thumbs.db

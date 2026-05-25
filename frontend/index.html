@@ -1,0 +1,2117 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Labuu — Marketing</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@300;400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<style>
+:root {
+  --bg: #FAF6F2;
+  --bg2: #FFFFFF;
+  --card: #FFFFFF;
+  --card2: #F5EFE8;
+  --border: #EDE4DA;
+  --border2: #D9CCBC;
+  --orange: #E87722;
+  --orange-dark: #C5621A;
+  --orange-dim: rgba(232,119,34,0.10);
+  --orange-glow: rgba(232,119,34,0.22);
+  --text: #1A0E04;
+  --text2: #6B5040;
+  --text3: #A08878;
+  --green: #16a34a;
+  --red: #dc2626;
+  --yellow: #d97706;
+  --radius: 10px;
+  --sidebar-w: 220px;
+  --font-display: 'Syne', sans-serif;
+  --font-body: 'DM Sans', sans-serif;
+  --font-mono: 'IBM Plex Mono', monospace;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  font-family: var(--font-body);
+  background: var(--bg);
+  color: var(--text);
+  height: 100vh;
+  display: flex;
+  overflow: hidden;
+}
+
+/* ── SCROLLBAR ─────────────────────────────── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: var(--orange); }
+
+/* ── SIDEBAR ───────────────────────────────── */
+#sidebar {
+  width: var(--sidebar-w);
+  min-width: var(--sidebar-w);
+  background: var(--bg2);
+  border-right: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  padding: 0 0 20px 0;
+  transition: width .25s, min-width .25s;
+  z-index: 100;
+  position: relative;
+}
+
+.sidebar-logo {
+  padding: 20px 18px 20px;
+  background: var(--orange);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.logo-mark {
+  width: 34px; height: 34px;
+  background: rgba(255,255,255,0.22);
+  border-radius: 9px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.logo-mark svg { color: white; }
+
+.logo-text {
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 800;
+  letter-spacing: 0.01em;
+  color: #FFFFFF;
+  white-space: nowrap;
+}
+
+.logo-text span { color: rgba(255,255,255,0.75); }
+
+.nav-section {
+  padding: 8px 8px 0;
+  flex: 1;
+  overflow-y: auto;
+}
+
+.nav-label {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text3);
+  padding: 12px 10px 6px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 10px;
+  border-radius: 7px;
+  cursor: pointer;
+  transition: background .15s, color .15s;
+  color: var(--text2);
+  font-size: 14px;
+  font-weight: 500;
+  white-space: nowrap;
+  user-select: none;
+}
+
+.nav-item:hover { background: var(--bg); color: var(--text); }
+.nav-item.active { background: var(--orange-dim); color: var(--orange); font-weight: 600; }
+.nav-item.active .nav-icon { color: var(--orange); }
+.nav-icon { width: 16px; height: 16px; flex-shrink: 0; }
+
+.sidebar-footer {
+  padding: 12px 8px 0;
+  border-top: 1px solid var(--border);
+  margin-top: 8px;
+}
+
+/* ── MAIN ──────────────────────────────────── */
+#main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  min-width: 0;
+}
+
+/* ── TOPBAR ────────────────────────────────── */
+#topbar {
+  height: 56px;
+  min-height: 56px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 24px;
+  background: var(--bg2);
+  gap: 16px;
+  box-shadow: 0 1px 0 var(--border);
+}
+
+.topbar-title {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 800;
+  color: var(--text);
+  white-space: nowrap;
+  letter-spacing: 0.01em;
+}
+
+.topbar-right { display: flex; align-items: center; gap: 10px; }
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 14px;
+  border-radius: 7px;
+  font-family: var(--font-body);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  border: none;
+  transition: all .15s;
+  white-space: nowrap;
+}
+
+.btn-primary {
+  background: var(--orange);
+  color: white;
+  box-shadow: 0 2px 6px rgba(232,119,34,0.35);
+}
+.btn-primary:hover { background: var(--orange-dark); box-shadow: 0 3px 10px rgba(232,119,34,0.4); }
+.btn-primary:active { transform: scale(0.97); box-shadow: none; }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text2);
+  border: 1px solid var(--border2);
+}
+.btn-ghost:hover { background: var(--bg); color: var(--text); border-color: var(--border2); }
+
+.btn-danger {
+  background: rgba(220,38,38,0.08);
+  color: var(--red);
+  border: 1px solid rgba(220,38,38,0.18);
+}
+.btn-danger:hover { background: rgba(220,38,38,0.15); }
+
+.btn-sm { padding: 5px 10px; font-size: 12px; }
+.btn-icon { padding: 7px; }
+
+/* ── CONTENT AREA ──────────────────────────── */
+#content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 28px 28px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* ── SECTION HEADERS ───────────────────────── */
+.section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
+
+.section-title {
+  font-family: var(--font-display);
+  font-size: 22px;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.section-sub {
+  font-size: 13px;
+  color: var(--text2);
+  margin-top: 2px;
+}
+
+/* ── CARDS ─────────────────────────────────── */
+.card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  transition: border-color .2s, box-shadow .2s;
+  box-shadow: 0 1px 4px rgba(180,120,60,0.07);
+}
+.card:hover { border-color: var(--border2); box-shadow: 0 3px 12px rgba(180,120,60,0.11); }
+
+.card-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  gap: 12px;
+}
+
+.card-title {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.3;
+}
+
+.card-meta {
+  font-size: 12px;
+  color: var(--text3);
+  margin-top: 2px;
+}
+
+/* ── GRID LAYOUTS ──────────────────────────── */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.grid-auto { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+
+/* ── BADGES ────────────────────────────────── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 3px 8px;
+  border-radius: 99px;
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.badge-alta { background: rgba(220,38,38,0.1); color: #b91c1c; }
+.badge-media { background: rgba(217,119,6,0.12); color: #b45309; }
+.badge-baixa { background: rgba(22,163,74,0.12); color: #15803d; }
+.badge-posted { background: rgba(22,163,74,0.12); color: #15803d; }
+.badge-pending { background: rgba(217,119,6,0.12); color: #b45309; }
+.badge-failed { background: rgba(220,38,38,0.1); color: #b91c1c; }
+.badge-instagram { background: rgba(225,48,108,0.1); color: #c2185b; }
+.badge-facebook { background: rgba(24,119,242,0.1); color: #1565c0; }
+.badge-tiktok { background: rgba(0,0,0,0.07); color: #333; }
+.badge-orange { background: var(--orange-dim); color: var(--orange); }
+
+/* ── PROMPT BLOCKS ─────────────────────────── */
+.prompt-block {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 12px 14px;
+  margin-top: 10px;
+  border-left: 3px solid var(--border2);
+}
+
+.prompt-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text3);
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.prompt-text {
+  font-family: var(--font-mono);
+  font-size: 12px;
+  color: var(--text2);
+  line-height: 1.6;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.copy-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: var(--text3);
+  padding: 2px;
+  display: flex;
+  align-items: center;
+  transition: color .15s;
+}
+.copy-btn:hover { color: var(--orange); }
+
+/* ── TASK LIST ─────────────────────────────── */
+.task-list { display: flex; flex-direction: column; gap: 6px; margin-top: 10px; }
+
+.task-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 8px 12px;
+  background: var(--bg);
+  border-radius: 6px;
+  border: 1px solid var(--border);
+  font-size: 13px;
+  color: var(--text2);
+  transition: border-color .15s;
+}
+.task-item:hover { border-color: var(--border2); }
+
+.task-dot {
+  width: 7px; height: 7px;
+  border-radius: 50%;
+  margin-top: 5px;
+  flex-shrink: 0;
+}
+.dot-alta { background: var(--red); }
+.dot-media { background: var(--yellow); }
+.dot-baixa { background: var(--green); }
+
+/* ── ENGAGEMENT CARD ───────────────────────── */
+.engagement-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  transition: border-color .2s, box-shadow .2s;
+  box-shadow: 0 1px 4px rgba(180,120,60,0.07);
+}
+.engagement-card:hover { border-color: var(--orange); box-shadow: 0 3px 12px rgba(232,119,34,0.12); }
+
+.eng-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+
+.eng-user {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.platform-icon {
+  width: 28px; height: 28px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.pi-instagram { background: rgba(225,48,108,0.12); color: #c2185b; }
+.pi-facebook { background: rgba(24,119,242,0.12); color: #1565c0; }
+.pi-tiktok { background: rgba(0,0,0,0.07); color: #222; }
+
+.eng-stats {
+  display: flex;
+  gap: 12px;
+  margin: 8px 0;
+  font-size: 12px;
+  color: var(--text3);
+}
+.eng-stat { display: flex; align-items: center; gap: 4px; }
+
+.eng-caption {
+  font-size: 13px;
+  color: var(--text2);
+  line-height: 1.5;
+  margin-bottom: 10px;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.eng-reason {
+  font-size: 11px;
+  color: var(--orange);
+  background: var(--orange-dim);
+  padding: 4px 8px;
+  border-radius: 4px;
+  margin-bottom: 10px;
+}
+
+.eng-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* ── PLATFORM SECTION ──────────────────────── */
+.platform-section { margin-bottom: 28px; }
+
+.platform-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+}
+
+.platform-name {
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 700;
+}
+
+/* ── FORM ELEMENTS ─────────────────────────── */
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+.form-label { font-size: 12px; font-weight: 600; color: var(--text2); letter-spacing: 0.03em; }
+
+.form-input, .form-textarea, .form-select {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  padding: 10px 13px;
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--text);
+  outline: none;
+  transition: border-color .15s, box-shadow .15s;
+  width: 100%;
+}
+.form-input:focus, .form-textarea:focus, .form-select:focus {
+  border-color: var(--orange);
+  box-shadow: 0 0 0 3px var(--orange-dim);
+}
+.form-textarea { resize: vertical; min-height: 90px; line-height: 1.5; }
+.form-select option { background: var(--card); }
+
+.form-grid { display: grid; gap: 16px; }
+.form-grid-2 { grid-template-columns: 1fr 1fr; }
+
+/* ── CHECKBOX GROUP ────────────────────────── */
+.checkbox-group { display: flex; gap: 12px; flex-wrap: wrap; }
+
+.checkbox-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  user-select: none;
+  font-size: 13px;
+  color: var(--text2);
+}
+
+.checkbox-item input { display: none; }
+
+.checkbox-custom {
+  width: 16px; height: 16px;
+  border: 1px solid var(--border2);
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all .15s;
+  flex-shrink: 0;
+}
+.checkbox-item input:checked ~ .checkbox-custom {
+  background: var(--orange);
+  border-color: var(--orange);
+}
+
+/* ── DROPZONE ──────────────────────────────── */
+#dropzone {
+  border: 2px dashed var(--border2);
+  border-radius: var(--radius);
+  padding: 40px 24px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color .2s, background .2s;
+}
+#dropzone:hover, #dropzone.drag-over {
+  border-color: var(--orange);
+  background: var(--orange-dim);
+}
+.dropzone-icon { color: var(--text3); margin-bottom: 10px; }
+.dropzone-text { font-size: 14px; color: var(--text2); }
+.dropzone-sub { font-size: 12px; color: var(--text3); margin-top: 4px; }
+.dropzone-file { font-size: 13px; color: var(--orange); margin-top: 8px; font-weight: 500; }
+
+/* ── POSTS TABLE ───────────────────────────── */
+.posts-list { display: flex; flex-direction: column; gap: 10px; }
+
+.post-row {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  transition: border-color .15s, box-shadow .15s;
+  box-shadow: 0 1px 3px rgba(180,120,60,0.06);
+}
+.post-row:hover { border-color: var(--orange); box-shadow: 0 2px 8px rgba(232,119,34,0.10); }
+
+.post-row-info { flex: 1; min-width: 0; }
+.post-row-title { font-size: 14px; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.post-row-meta { font-size: 12px; color: var(--text3); margin-top: 2px; }
+.post-row-platforms { display: flex; gap: 6px; }
+.post-row-actions { display: flex; gap: 8px; flex-shrink: 0; }
+
+/* ── METRICS ───────────────────────────────── */
+.metric-cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 12px; }
+
+.metric-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  box-shadow: 0 1px 4px rgba(180,120,60,0.07);
+  transition: border-color .15s, box-shadow .15s;
+}
+.metric-card:hover { border-color: var(--orange); box-shadow: 0 3px 10px rgba(232,119,34,0.12); }
+
+.metric-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text3);
+}
+
+.metric-value {
+  font-family: var(--font-display);
+  font-size: 28px;
+  font-weight: 800;
+  color: var(--orange);
+  line-height: 1;
+}
+
+.metric-sub { font-size: 12px; color: var(--text3); }
+
+.platform-metrics-block {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 16px;
+  box-shadow: 0 1px 4px rgba(180,120,60,0.07);
+}
+
+.platform-metrics-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-display);
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text);
+}
+
+/* ── IMAGE GRID ────────────────────────────── */
+.image-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 14px; }
+
+.image-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  transition: border-color .2s, transform .2s, box-shadow .2s;
+  box-shadow: 0 1px 4px rgba(180,120,60,0.07);
+}
+.image-card:hover { border-color: var(--orange); transform: translateY(-3px); box-shadow: 0 6px 20px rgba(232,119,34,0.15); }
+
+.image-thumb {
+  width: 100%;
+  aspect-ratio: 9/10;
+  object-fit: cover;
+  display: block;
+  background: var(--bg);
+}
+
+.image-thumb-placeholder {
+  width: 100%;
+  aspect-ratio: 9/10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+  color: var(--text3);
+}
+
+.image-info { padding: 10px 12px; }
+.image-name { font-size: 12px; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.image-desc { font-size: 11px; color: var(--text3); margin-top: 2px; }
+.image-actions { padding: 0 12px 10px; }
+
+/* ── STAT SUMMARY ──────────────────────────── */
+.stat-row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 4px;
+}
+
+.stat-chip {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 12px;
+  color: var(--text2);
+  font-weight: 500;
+}
+
+/* ── SLOT BADGE ────────────────────────────── */
+.slot-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  border-radius: 99px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+.slot-morning { background: rgba(217,119,6,0.12); color: #b45309; }
+.slot-afternoon { background: var(--orange-dim); color: var(--orange); }
+
+/* ── EMPTY STATE ───────────────────────────── */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 60px 24px;
+  color: var(--text3);
+  text-align: center;
+}
+.empty-state svg { opacity: 0.4; }
+.empty-state p { font-size: 14px; }
+.empty-state span { font-size: 13px; color: var(--text3); }
+
+/* ── LOADING ───────────────────────────────── */
+.loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 60px;
+}
+.spinner {
+  width: 28px; height: 28px;
+  border: 2px solid var(--border2);
+  border-top-color: var(--orange);
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── DIVIDER ───────────────────────────────── */
+.divider { height: 1px; background: var(--border); margin: 20px 0; }
+
+/* ── TOAST ─────────────────────────────────── */
+#toast-container {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  z-index: 9999;
+}
+
+.toast {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  background: var(--card);
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  font-size: 13px;
+  color: var(--text);
+  min-width: 220px;
+  max-width: 360px;
+  box-shadow: 0 8px 32px rgba(180,100,40,.18);
+  animation: toastIn .2s ease;
+}
+.toast.success { border-color: rgba(22,163,74,0.35); background: #f0fdf4; }
+.toast.error { border-color: rgba(220,38,38,0.3); background: #fef2f2; }
+.toast.info { border-color: var(--orange-glow); background: #fffbf5; }
+.toast-icon-wrap { flex-shrink: 0; }
+.toast.success .toast-icon-wrap { color: var(--green); }
+.toast.error .toast-icon-wrap { color: var(--red); }
+.toast.info .toast-icon-wrap { color: var(--orange); }
+@keyframes toastIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ── SECTION VIEW ──────────────────────────── */
+.section-view { display: none; flex-direction: column; gap: 20px; animation: fadeIn .2s ease; }
+.section-view.active { display: flex; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+/* ── LAST UPDATED ──────────────────────────── */
+.last-updated {
+  font-size: 11px;
+  color: var(--text3);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+/* ── CONTENT BLOCK ─────────────────────────── */
+.content-block {
+  border-top: 1px solid var(--border);
+  padding-top: 14px;
+  margin-top: 4px;
+}
+.content-block-label {
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--orange);
+  margin-bottom: 6px;
+}
+.content-block-text {
+  font-size: 13px;
+  color: var(--text2);
+  line-height: 1.6;
+}
+
+.hook-text {
+  font-family: var(--font-display);
+  font-size: 17px;
+  font-weight: 700;
+  color: #7C3A00;
+  line-height: 1.35;
+  margin-bottom: 6px;
+  padding: 12px 16px;
+  background: linear-gradient(135deg, rgba(232,119,34,0.12), rgba(232,119,34,0.06));
+  border-left: 4px solid var(--orange);
+  border-radius: 0 8px 8px 0;
+}
+
+/* ── PATTERNS ──────────────────────────────── */
+.pattern-list { display: flex; flex-direction: column; gap: 6px; }
+.pattern-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 7px;
+  font-size: 13px;
+  transition: border-color .15s;
+}
+.pattern-item:hover { border-color: var(--orange); }
+.pattern-type { color: var(--text3); font-size: 11px; text-transform: uppercase; letter-spacing: 0.06em; }
+.pattern-value { color: var(--text); font-weight: 500; margin-top: 1px; }
+.pattern-score { font-family: var(--font-mono); font-size: 13px; color: var(--orange); font-weight: 700; }
+
+/* ── RESPONSIVE ────────────────────────────── */
+@media (max-width: 768px) {
+  #sidebar { width: 56px; min-width: 56px; }
+  .logo-text, .nav-item span, .nav-label { display: none; }
+  .sidebar-logo { justify-content: center; padding: 14px 10px; }
+  .nav-item { justify-content: center; padding: 10px; }
+  .nav-icon { width: 18px; height: 18px; }
+  #content { padding: 16px; }
+  .grid-2, .grid-3, .form-grid-2 { grid-template-columns: 1fr; }
+  .topbar-title { display: none; }
+}
+
+@media (max-width: 480px) {
+  .metric-cards { grid-template-columns: 1fr 1fr; }
+}
+
+/* ── TIKTOK HASHTAG LIST ───────────────────── */
+.hashtag-list { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+.hashtag-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 13px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  font-size: 13px;
+  color: var(--text2);
+  cursor: pointer;
+  font-weight: 500;
+  text-decoration: none;
+  transition: border-color .15s, color .15s, background .15s;
+}
+.hashtag-chip:hover { border-color: var(--orange); color: var(--orange); background: var(--orange-dim); }
+
+/* ── UPLOAD IMAGE DROPZONE ─────────────────── */
+.img-upload-area {
+  border: 2px dashed var(--border2);
+  border-radius: var(--radius);
+  padding: 28px;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color .2s, background .2s;
+}
+.img-upload-area:hover { border-color: var(--orange); background: var(--orange-dim); }
+
+/* ── SLOT HEADER ───────────────────────────── */
+.slot-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.slot-time {
+  font-family: var(--font-mono);
+  font-size: 28px;
+  font-weight: 500;
+  color: var(--text);
+}
+.slot-time span { color: var(--orange); }
+
+/* ── PAGE SECTIONS ─────────────────────────── */
+#page-dashboard .day-slot-card {
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 22px;
+  box-shadow: 0 2px 10px rgba(180,120,60,0.08);
+  transition: box-shadow .2s, border-color .2s;
+}
+#page-dashboard .day-slot-card:hover {
+  box-shadow: 0 4px 20px rgba(232,119,34,0.12);
+  border-color: var(--border2);
+}
+
+/* ── DARK MODE ─────────────────────────────── */
+html[data-theme="dark"] {
+  --bg: #0D0906;
+  --bg2: #130E09;
+  --card: #1A1008;
+  --card2: #211508;
+  --border: #2C1E12;
+  --border2: #3C2E20;
+  --text: #F2EDE6;
+  --text2: #A08878;
+  --text3: #5E4E40;
+}
+
+html[data-theme="dark"] .card,
+html[data-theme="dark"] .engagement-card,
+html[data-theme="dark"] .metric-card,
+html[data-theme="dark"] .platform-metrics-block,
+html[data-theme="dark"] .post-row,
+html[data-theme="dark"] .image-card,
+html[data-theme="dark"] #page-dashboard .day-slot-card {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.4);
+}
+
+html[data-theme="dark"] .hook-text {
+  color: #F2C490;
+  background: linear-gradient(135deg, rgba(232,119,34,0.18), rgba(232,119,34,0.08));
+}
+
+html[data-theme="dark"] .toast.success { background: #0A1F0E; }
+html[data-theme="dark"] .toast.error   { background: #1F0A0A; }
+html[data-theme="dark"] .toast.info    { background: #1A1005; }
+
+html[data-theme="dark"] .form-input,
+html[data-theme="dark"] .form-textarea,
+html[data-theme="dark"] .form-select {
+  background: var(--card);
+  color: var(--text);
+}
+
+html[data-theme="dark"] .btn-ghost {
+  color: var(--text2);
+  border-color: var(--border2);
+}
+html[data-theme="dark"] .btn-ghost:hover {
+  background: var(--card2);
+  color: var(--text);
+}
+
+html[data-theme="dark"] #dropzone {
+  border-color: var(--border2);
+}
+
+html[data-theme="dark"] .metric-value { color: var(--orange); }
+
+/* botão toggle */
+#theme-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px; height: 32px;
+  border-radius: 7px;
+  border: 1px solid var(--border2);
+  background: transparent;
+  color: var(--text2);
+  cursor: pointer;
+  transition: background .15s, color .15s, border-color .15s;
+  flex-shrink: 0;
+}
+#theme-btn:hover { background: var(--bg); color: var(--orange); border-color: var(--orange); }
+
+/* ── AUTH MODAL ────────────────────────────────── */
+#auth-overlay {
+  position: fixed; inset: 0; z-index: 9999;
+  background: rgba(0,0,0,0.55);
+  display: flex; align-items: center; justify-content: center;
+  backdrop-filter: blur(4px);
+}
+#auth-overlay.hidden { display: none; }
+#auth-box {
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  padding: 36px 32px;
+  width: 360px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.18);
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+#auth-box h2 {
+  font-family: var(--font-display);
+  font-size: 22px; font-weight: 800;
+  color: var(--text);
+}
+#auth-box p { font-size: 13px; color: var(--text2); }
+#auth-token-input {
+  width: 100%;
+  padding: 11px 13px;
+  border: 1px solid var(--border2);
+  border-radius: var(--radius);
+  background: var(--bg);
+  color: var(--text);
+  font-size: 14px;
+  font-family: var(--font-mono);
+  letter-spacing: 0.04em;
+}
+#auth-token-input:focus { outline: 2px solid var(--orange); border-color: transparent; }
+#auth-error { font-size: 12px; color: var(--red); display: none; }
+</style>
+</head>
+<script>
+  // Aplica tema antes do render para evitar flash
+  (function() {
+    var t = localStorage.getItem('labuu-theme') || 'light';
+    document.documentElement.dataset.theme = t;
+  })();
+</script>
+<body>
+
+<!-- SIDEBAR -->
+<nav id="sidebar">
+  <div class="sidebar-logo">
+    <div class="logo-mark">
+      <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+    </div>
+    <span class="logo-text">La<span>buu</span></span>
+  </div>
+  <div class="nav-section">
+    <div class="nav-label">Conteúdo</div>
+    <div class="nav-item active" data-page="dashboard">
+      <i data-lucide="layout-dashboard" class="nav-icon"></i>
+      <span>Dashboard</span>
+    </div>
+    <div class="nav-item" data-page="engagement">
+      <i data-lucide="message-circle" class="nav-icon"></i>
+      <span>Engajamento</span>
+    </div>
+    <div class="nav-label">Posts</div>
+    <div class="nav-item" data-page="schedule">
+      <i data-lucide="upload-cloud" class="nav-icon"></i>
+      <span>Agendar Post</span>
+    </div>
+    <div class="nav-item" data-page="posts">
+      <i data-lucide="calendar-clock" class="nav-icon"></i>
+      <span>Posts Agendados</span>
+    </div>
+    <div class="nav-label">Análise</div>
+    <div class="nav-item" data-page="metrics">
+      <i data-lucide="bar-chart-2" class="nav-icon"></i>
+      <span>Métricas</span>
+    </div>
+    <div class="nav-label">Marca</div>
+    <div class="nav-item" data-page="library">
+      <i data-lucide="image" class="nav-icon"></i>
+      <span>Biblioteca</span>
+    </div>
+    <div class="nav-item" data-page="settings">
+      <i data-lucide="settings" class="nav-icon"></i>
+      <span>Configurações</span>
+    </div>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<div id="main">
+  <!-- TOPBAR -->
+  <div id="topbar">
+    <span class="topbar-title" id="topbar-title">Dashboard</span>
+    <div class="topbar-right">
+      <span class="last-updated" id="last-updated-label">
+        <i data-lucide="refresh-cw" style="width:12px;height:12px;"></i>
+        <span id="last-updated-time">—</span>
+      </span>
+      <button id="theme-btn" onclick="toggleTheme()" title="Alternar modo claro/escuro">
+        <i data-lucide="moon" style="width:15px;height:15px;" id="theme-icon"></i>
+      </button>
+      <button class="btn btn-ghost btn-sm" onclick="refreshCurrent()">
+        <i data-lucide="refresh-cw" style="width:13px;height:13px;"></i>
+        Atualizar
+      </button>
+      <button class="btn btn-primary btn-sm" onclick="generateNow()">
+        <i data-lucide="zap" style="width:13px;height:13px;"></i>
+        Gerar Conteúdo
+      </button>
+    </div>
+  </div>
+
+  <!-- CONTENT -->
+  <div id="content">
+
+    <!-- DASHBOARD -->
+    <section id="page-dashboard" class="section-view active">
+      <div class="section-header">
+        <div>
+          <div class="section-title">Conteúdo do Dia</div>
+          <div class="section-sub">Ideias geradas automaticamente para hoje</div>
+        </div>
+      </div>
+      <div id="dashboard-content"><div class="loading"><div class="spinner"></div></div></div>
+    </section>
+
+    <!-- ENGAJAMENTO -->
+    <section id="page-engagement" class="section-view">
+      <div class="section-header">
+        <div>
+          <div class="section-title">Engajamento Inteligente</div>
+          <div class="section-sub">Posts em alta pra você comentar agora</div>
+        </div>
+      </div>
+      <div id="engagement-content"><div class="loading"><div class="spinner"></div></div></div>
+    </section>
+
+    <!-- AGENDAR POST -->
+    <section id="page-schedule" class="section-view">
+      <div class="section-header">
+        <div>
+          <div class="section-title">Agendar Post</div>
+          <div class="section-sub">Faça upload e agende nas plataformas</div>
+        </div>
+      </div>
+      <div class="card" style="max-width:680px">
+        <form id="schedule-form" onsubmit="submitScheduledPost(event)">
+          <div class="form-grid" style="gap:18px">
+
+            <div id="dropzone" onclick="document.getElementById('file-input').click()" ondragover="handleDragOver(event)" ondragleave="handleDragLeave(event)" ondrop="handleDrop(event)">
+              <div class="dropzone-icon"><i data-lucide="upload-cloud" style="width:40px;height:40px;"></i></div>
+              <div class="dropzone-text">Arraste o vídeo ou imagem aqui</div>
+              <div class="dropzone-sub">MP4, MOV, JPG, PNG · Máx 500MB</div>
+              <div id="dropzone-filename" class="dropzone-file"></div>
+              <input type="file" id="file-input" style="display:none" accept="video/*,image/*" onchange="handleFileSelect(event)">
+            </div>
+
+            <div class="form-grid form-grid-2">
+              <div class="form-group">
+                <label class="form-label">Título</label>
+                <input class="form-input" id="post-title" type="text" placeholder="Ex: Pedreiro em 24 horas">
+              </div>
+              <div class="form-group">
+                <label class="form-label">Agendar para</label>
+                <input class="form-input" id="post-datetime" type="datetime-local" required>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" style="display:flex;align-items:center;justify-content:space-between">
+                Legenda
+                <button type="button" class="btn btn-ghost btn-sm" id="btn-suggest-caption" onclick="suggestCaption()">
+                  <i data-lucide="sparkles" style="width:12px;height:12px;"></i>
+                  Sugerir Legenda
+                </button>
+              </label>
+              <textarea class="form-textarea" id="post-caption" placeholder="Texto do post..."></textarea>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Hashtags</label>
+              <input class="form-input" id="post-hashtags" type="text" placeholder="#construcaocivil #pedreiro #obra #labuu">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Plataformas</label>
+              <div class="checkbox-group">
+                <label class="checkbox-item">
+                  <input type="checkbox" id="cb-instagram" checked>
+                  <span class="checkbox-custom"><i data-lucide="check" style="width:10px;height:10px;"></i></span>
+                  <span>Instagram</span>
+                </label>
+                <label class="checkbox-item">
+                  <input type="checkbox" id="cb-facebook" checked>
+                  <span class="checkbox-custom"><i data-lucide="check" style="width:10px;height:10px;"></i></span>
+                  <span>Facebook</span>
+                </label>
+                <label class="checkbox-item">
+                  <input type="checkbox" id="cb-tiktok" checked>
+                  <span class="checkbox-custom"><i data-lucide="check" style="width:10px;height:10px;"></i></span>
+                  <span>TikTok</span>
+                </label>
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="justify-content:center; padding:12px">
+              <i data-lucide="calendar-plus" style="width:15px;height:15px;"></i>
+              Agendar Post
+            </button>
+
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- POSTS AGENDADOS -->
+    <section id="page-posts" class="section-view">
+      <div class="section-header">
+        <div>
+          <div class="section-title">Posts Agendados</div>
+          <div class="section-sub">Acompanhe o status das suas publicações</div>
+        </div>
+      </div>
+      <div id="posts-content"><div class="loading"><div class="spinner"></div></div></div>
+    </section>
+
+    <!-- MÉTRICAS -->
+    <section id="page-metrics" class="section-view">
+      <div class="section-header">
+        <div>
+          <div class="section-title">Métricas</div>
+          <div class="section-sub">Performance acumulada por plataforma</div>
+        </div>
+      </div>
+      <div id="metrics-content"><div class="loading"><div class="spinner"></div></div></div>
+    </section>
+
+    <!-- BIBLIOTECA -->
+    <section id="page-library" class="section-view">
+      <div class="section-header">
+        <div>
+          <div class="section-title">Biblioteca de Imagens</div>
+          <div class="section-sub">Imagens da marca Labuu disponíveis</div>
+        </div>
+        <button class="btn btn-primary btn-sm" onclick="document.getElementById('lib-file-input').click()">
+          <i data-lucide="plus" style="width:13px;height:13px;"></i>
+          Adicionar Imagem
+        </button>
+      </div>
+      <input type="file" id="lib-file-input" style="display:none" accept="image/*" onchange="uploadBrandImage(event)">
+      <div id="library-content"><div class="loading"><div class="spinner"></div></div></div>
+    </section>
+
+    <!-- CONFIGURAÇÕES -->
+    <section id="page-settings" class="section-view">
+      <div class="section-header">
+        <div>
+          <div class="section-title">Configurações da Marca</div>
+          <div class="section-sub">Define o tom e estratégia do conteúdo gerado</div>
+        </div>
+      </div>
+      <div class="card" style="max-width:560px">
+        <form id="settings-form" onsubmit="saveSettings(event)">
+          <div class="form-grid" style="gap:18px">
+
+            <div class="form-group">
+              <label class="form-label">Público-Alvo</label>
+              <select class="form-select" id="cfg-audience">
+                <option value="ambos">Pedreiros + Donos de Obra</option>
+                <option value="pedreiros">Pedreiros e Ajudantes</option>
+                <option value="donos">Donos de Obra</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Tom de Voz</label>
+              <input class="form-input" id="cfg-tone" type="text" placeholder="Ex: informal natural, sem forçar gíria">
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Temas Prioritários</label>
+              <input class="form-input" id="cfg-themes" type="text" placeholder="Ex: pedreiro, obra, contratação, construção">
+              <span style="font-size:11px;color:var(--text3);margin-top:4px">Separe com vírgula</span>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label">Frequência Semanal de Posts</label>
+              <input class="form-input" id="cfg-frequency" type="number" min="1" max="21" placeholder="7">
+            </div>
+
+            <button type="submit" class="btn btn-primary" style="justify-content:center; padding:12px">
+              <i data-lucide="save" style="width:15px;height:15px;"></i>
+              Salvar Configurações
+            </button>
+
+          </div>
+        </form>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<!-- AUTH MODAL -->
+<div id="auth-overlay" class="hidden">
+  <div id="auth-box">
+    <div style="display:flex;align-items:center;gap:10px">
+      <div style="width:36px;height:36px;background:var(--orange);border-radius:9px;display:flex;align-items:center;justify-content:center">
+        <i data-lucide="lock" style="width:18px;height:18px;color:white"></i>
+      </div>
+      <h2>Acesso Labuu</h2>
+    </div>
+    <p>Digite o token de administrador para continuar.</p>
+    <input id="auth-token-input" type="password" placeholder="Token de acesso..."
+           onkeydown="if(event.key==='Enter') submitToken()">
+    <span id="auth-error">Token inválido. Tente novamente.</span>
+    <button class="btn btn-primary" style="justify-content:center;padding:12px" onclick="submitToken()">
+      <i data-lucide="log-in" style="width:15px;height:15px;"></i>
+      Entrar
+    </button>
+  </div>
+</div>
+
+<!-- TOAST CONTAINER -->
+<div id="toast-container"></div>
+
+<script>
+// ── THEME ──────────────────────────────────────────────
+function toggleTheme() {
+  const html = document.documentElement;
+  const isDark = html.dataset.theme === 'dark';
+  const next = isDark ? 'light' : 'dark';
+  html.dataset.theme = next;
+  localStorage.setItem('labuu-theme', next);
+  updateThemeIcon();
+}
+
+function updateThemeIcon() {
+  const isDark = document.documentElement.dataset.theme === 'dark';
+  const icon = document.getElementById('theme-icon');
+  if (icon) {
+    icon.dataset.lucide = isDark ? 'sun' : 'moon';
+    lucide.createIcons();
+  }
+}
+
+// ── ICONS ──────────────────────────────────────────────
+document.addEventListener('DOMContentLoaded', () => {
+  lucide.createIcons();
+  updateThemeIcon();
+  navigate('dashboard');
+  setDefaultDatetime();
+  startAutoRefresh();
+  // Mostra modal de login se não houver token salvo
+  if (!getToken()) showAuthModal();
+});
+
+// ── ROUTING ────────────────────────────────────────────
+const PAGE_TITLES = {
+  dashboard: 'Dashboard',
+  engagement: 'Engajamento',
+  schedule: 'Agendar Post',
+  posts: 'Posts Agendados',
+  metrics: 'Métricas',
+  library: 'Biblioteca',
+  settings: 'Configurações'
+};
+
+let currentPage = 'dashboard';
+
+function navigate(page) {
+  document.querySelectorAll('.section-view').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+
+  const section = document.getElementById(`page-${page}`);
+  if (section) section.classList.add('active');
+
+  const navItem = document.querySelector(`[data-page="${page}"]`);
+  if (navItem) navItem.classList.add('active');
+
+  document.getElementById('topbar-title').textContent = PAGE_TITLES[page] || page;
+  currentPage = page;
+
+  loadPageData(page);
+  lucide.createIcons();
+}
+
+document.querySelectorAll('.nav-item').forEach(item => {
+  item.addEventListener('click', () => navigate(item.dataset.page));
+});
+
+function loadPageData(page) {
+  switch(page) {
+    case 'dashboard': loadDashboard(); break;
+    case 'engagement': loadEngagement(); break;
+    case 'posts': loadPosts(); break;
+    case 'metrics': loadMetrics(); break;
+    case 'library': loadLibrary(); break;
+    case 'settings': loadSettings(); break;
+  }
+}
+
+function refreshCurrent() { loadPageData(currentPage); }
+
+// ── AUTO REFRESH ────────────────────────────────────────
+function startAutoRefresh() {
+  setInterval(() => {
+    if (currentPage === 'dashboard') loadDashboard();
+  }, 30000);
+}
+
+// ── AUTH ───────────────────────────────────────────────
+const TOKEN_KEY = 'labuu-admin-token';
+
+function getToken() { return localStorage.getItem(TOKEN_KEY) || ''; }
+function setToken(t) { localStorage.setItem(TOKEN_KEY, t); }
+function clearToken() { localStorage.removeItem(TOKEN_KEY); }
+
+function showAuthModal() {
+  const overlay = document.getElementById('auth-overlay');
+  overlay.classList.remove('hidden');
+  document.getElementById('auth-token-input').value = '';
+  document.getElementById('auth-error').style.display = 'none';
+  setTimeout(() => document.getElementById('auth-token-input').focus(), 50);
+  lucide.createIcons();
+}
+
+function hideAuthModal() {
+  document.getElementById('auth-overlay').classList.add('hidden');
+}
+
+async function submitToken() {
+  const input = document.getElementById('auth-token-input');
+  const token = input.value.trim();
+  if (!token) return;
+  // Test token against health endpoint (no auth required) — but to verify
+  // we'll try a protected endpoint and check the response.
+  try {
+    const res = await fetch('/api/brand', { headers: { 'X-Admin-Token': token } });
+    if (res.status === 401) {
+      document.getElementById('auth-error').style.display = 'block';
+      return;
+    }
+    setToken(token);
+    hideAuthModal();
+    loadPageData(currentPage);
+  } catch(e) {
+    document.getElementById('auth-error').style.display = 'block';
+  }
+}
+
+// ── API HELPERS ────────────────────────────────────────
+async function api(path, options = {}) {
+  const token = getToken();
+  if (token) {
+    options.headers = Object.assign({}, options.headers || {}, { 'X-Admin-Token': token });
+  }
+  const res = await fetch(path, options);
+  if (res.status === 401) {
+    clearToken();
+    showAuthModal();
+    throw new Error('Não autorizado');
+  }
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  return res.json();
+}
+
+function authHeaders() {
+  const t = getToken();
+  return t ? { 'X-Admin-Token': t } : {};
+}
+
+// ── DASHBOARD ──────────────────────────────────────────
+async function loadDashboard() {
+  const el = document.getElementById('dashboard-content');
+  try {
+    const items = await api('/api/content/today');
+    updateLastUpdated();
+
+    if (!items.length) {
+      el.innerHTML = `
+        <div class="empty-state">
+          <i data-lucide="sunrise" style="width:48px;height:48px;"></i>
+          <p>Nenhum conteúdo gerado hoje ainda</p>
+          <span>Clique em "Gerar Conteúdo" para criar agora</span>
+          <button class="btn btn-primary" onclick="generateNow()">
+            <i data-lucide="zap" style="width:14px;height:14px;"></i>
+            Gerar Agora
+          </button>
+        </div>`;
+      lucide.createIcons(); return;
+    }
+
+    const html = items.map(item => renderContentCard(item)).join('');
+    el.innerHTML = `<div class="grid-2" style="align-items:start">${html}</div>`;
+    lucide.createIcons();
+  } catch(e) {
+    el.innerHTML = renderError('Erro ao carregar conteúdo', e.message);
+    lucide.createIcons();
+  }
+}
+
+function renderContentCard(item) {
+  const slotLabel = item.slot === 'morning' ? '08:00' : '15:00';
+  const slotClass = item.slot === 'morning' ? 'slot-morning' : 'slot-afternoon';
+  const slotIcon = item.slot === 'morning' ? 'sunrise' : 'sun';
+
+  const tasks = (item.organic_tasks || []).map(t => `
+    <div class="task-item">
+      <div class="task-dot dot-${t.priority || 'media'}"></div>
+      <div>
+        <span class="badge badge-${t.platform || 'media'}" style="font-size:10px;margin-bottom:3px">${t.platform || ''}</span>
+        <div style="font-size:13px;color:var(--text2);margin-top:3px">${t.action}</div>
+      </div>
+    </div>`).join('');
+
+  return `
+  <div class="day-slot-card">
+    <div class="slot-header">
+      <div class="slot-time">${slotLabel.replace(':','<span>h</span>')}</div>
+      <div class="badge ${slotClass}">
+        <i data-lucide="${slotIcon}" style="width:11px;height:11px;"></i>
+        ${item.slot === 'morning' ? 'Manhã' : 'Tarde'}
+      </div>
+    </div>
+
+    <div class="content-block">
+      <div class="content-block-label">Ideia do Vídeo</div>
+      <div style="font-family:var(--font-display);font-size:17px;font-weight:700;color:var(--text)">${item.video_idea || '—'}</div>
+    </div>
+
+    <div class="content-block">
+      <div class="content-block-label">Hook (primeiros 3 segundos)</div>
+      <div class="hook-text">${item.hook || '—'}</div>
+    </div>
+
+    <div class="content-block">
+      <div class="content-block-label">Roteiro</div>
+      <div class="content-block-text">${(item.script || '').replace(/\n/g, '<br>')}</div>
+    </div>
+
+    <div class="prompt-block">
+      <div class="prompt-label">
+        <span>Prompt — Imagem</span>
+        <button class="copy-btn" onclick="copyText('${escapeAttr(item.image_recommendation || item.image_prompt || '')}', this)">
+          <i data-lucide="copy" style="width:13px;height:13px;"></i>
+        </button>
+      </div>
+      <div class="prompt-text">${item.image_recommendation ? '📸 Use da biblioteca: ' + item.image_recommendation : (item.image_prompt || '—')}</div>
+    </div>
+
+    <div class="prompt-block">
+      <div class="prompt-label">
+        <span>Prompt — Vídeo (Runway / CapCut)</span>
+        <button class="copy-btn" onclick="copyText('${escapeAttr(item.video_prompt || '')}', this)">
+          <i data-lucide="copy" style="width:13px;height:13px;"></i>
+        </button>
+      </div>
+      <div class="prompt-text">${item.video_prompt || '—'}</div>
+    </div>
+
+    ${tasks ? `<div class="content-block">
+      <div class="content-block-label">Tarefas Orgânicas do Dia</div>
+      <div class="task-list">${tasks}</div>
+    </div>` : ''}
+  </div>`;
+}
+
+// ── ENGAGEMENT ─────────────────────────────────────────
+async function loadEngagement() {
+  const el = document.getElementById('engagement-content');
+  try {
+    const items = await api('/api/content/today');
+    updateLastUpdated();
+
+    let engData = null;
+    if (items.length) {
+      const latest = items[items.length - 1];
+      engData = latest.engagement_posts;
+    }
+
+    if (!engData) {
+      el.innerHTML = `
+        <div class="empty-state">
+          <i data-lucide="message-circle" style="width:48px;height:48px;"></i>
+          <p>Nenhuma sugestão de engajamento ainda</p>
+          <span>Gere o conteúdo do dia para ver recomendações</span>
+          <button class="btn btn-primary" onclick="generateNow()">Gerar Conteúdo</button>
+        </div>`;
+      lucide.createIcons(); return;
+    }
+
+    let html = '';
+
+    // Instagram
+    const igPosts = engData.instagram || [];
+    html += renderPlatformEngagement('Instagram', 'instagram', 'pi-instagram', igPosts);
+
+    // Facebook
+    const fbPosts = engData.facebook || [];
+    const fbGroups = engData.facebook_groups || [];
+    html += renderPlatformEngagement('Facebook', 'facebook', 'pi-facebook', fbPosts, fbGroups);
+
+    // TikTok
+    const ttTags = engData.tiktok_hashtags || [];
+    html += renderTikTokSection(ttTags);
+
+    el.innerHTML = html;
+    lucide.createIcons();
+  } catch(e) {
+    el.innerHTML = renderError('Erro ao carregar engajamento', e.message);
+    lucide.createIcons();
+  }
+}
+
+function renderPlatformEngagement(name, key, iconClass, posts, groups = []) {
+  const icon = key === 'instagram' ? 'instagram' : 'facebook';
+
+  let postsHtml = '';
+  if (posts.length) {
+    postsHtml = `<div class="grid-auto">${posts.map(p => `
+      <div class="engagement-card">
+        <div class="eng-header">
+          <div class="eng-user">
+            <div class="platform-icon ${iconClass}">
+              <i data-lucide="${icon}" style="width:14px;height:14px;"></i>
+            </div>
+            <span>${p.username || '@usuario'}</span>
+          </div>
+          <span class="badge badge-${p.priority === 'alta' ? 'alta' : 'media'}">${p.priority === 'alta' ? '🔴 Alta' : '🟡 Média'}</span>
+        </div>
+        ${p.reason ? `<div class="eng-reason">${p.reason}</div>` : ''}
+        <div class="eng-caption">${p.post_url ? `<a href="${p.post_url}" target="_blank" style="color:var(--text2);text-decoration:none">${p.username}</a> — ` : ''}${p.caption || '...'}</div>
+        <div class="eng-stats">
+          <span class="eng-stat"><i data-lucide="heart" style="width:12px;height:12px;color:var(--red)"></i>${fmtNum(p.likes)}</span>
+          <span class="eng-stat"><i data-lucide="message-circle" style="width:12px;height:12px"></i>${fmtNum(p.comments)}</span>
+        </div>
+        <div class="prompt-block" style="margin-top:0">
+          <div class="prompt-label">
+            <span>Comentário Sugerido</span>
+            <button class="copy-btn" onclick="copyText('${escapeAttr(p.suggested_comment || '')}', this)">
+              <i data-lucide="copy" style="width:13px;height:13px;"></i>
+            </button>
+          </div>
+          <div class="prompt-text">${p.suggested_comment || '—'}</div>
+        </div>
+        <div class="eng-actions" style="margin-top:10px">
+          ${p.post_url ? `<a href="${p.post_url}" target="_blank" class="btn btn-ghost btn-sm"><i data-lucide="external-link" style="width:12px;height:12px;"></i>Abrir Post</a>` : ''}
+        </div>
+      </div>`).join('')}</div>`;
+  } else {
+    postsHtml = `<div class="empty-state" style="padding:30px"><i data-lucide="search" style="width:32px;height:32px;"></i><span>Nenhum post encontrado agora</span></div>`;
+  }
+
+  let groupsHtml = '';
+  if (groups.length) {
+    groupsHtml = `
+      <div style="margin-top:16px">
+        <div class="content-block-label" style="margin-bottom:10px">Grupos Recomendados</div>
+        <div class="grid-auto">${groups.map(g => `
+          <div class="engagement-card">
+            <div class="eng-user" style="margin-bottom:8px">
+              <div class="platform-icon pi-facebook"><i data-lucide="users" style="width:14px;height:14px;"></i></div>
+              <span>${g.name}</span>
+            </div>
+            <div class="eng-caption">${g.description}</div>
+            <a href="${g.url}" target="_blank" class="btn btn-ghost btn-sm" style="margin-top:8px">
+              <i data-lucide="external-link" style="width:12px;height:12px;"></i>Abrir Grupo
+            </a>
+          </div>`).join('')}</div>
+      </div>`;
+  }
+
+  return `
+  <div class="platform-section">
+    <div class="platform-header">
+      <div class="platform-icon ${iconClass}">
+        <i data-lucide="${icon}" style="width:16px;height:16px;"></i>
+      </div>
+      <span class="platform-name">${name}</span>
+    </div>
+    ${postsHtml}
+    ${groupsHtml}
+  </div>`;
+}
+
+function renderTikTokSection(tags) {
+  return `
+  <div class="platform-section">
+    <div class="platform-header">
+      <div class="platform-icon pi-tiktok">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.32 6.32 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.18 8.18 0 0 0 4.78 1.52V6.75a4.85 4.85 0 0 1-1.01-.06z"/></svg>
+      </div>
+      <span class="platform-name">TikTok</span>
+    </div>
+    <div class="card">
+      <div class="content-block-label" style="margin-bottom:8px">Hashtags do Nicho — Engaje nesses conteúdos</div>
+      <div class="hashtag-list">
+        ${tags.map(t => `
+          <a href="${t.url}" target="_blank" class="hashtag-chip">
+            <i data-lucide="hash" style="width:12px;height:12px;"></i>
+            ${t.tag}
+          </a>`).join('')}
+      </div>
+      <div style="margin-top:16px;padding-top:14px;border-top:1px solid var(--border)">
+        <div class="content-block-label" style="margin-bottom:6px">Como usar</div>
+        <div class="task-list">
+          <div class="task-item"><div class="task-dot dot-alta"></div><span>Clique em uma hashtag acima</span></div>
+          <div class="task-item"><div class="task-dot dot-alta"></div><span>Encontre vídeos com muitas curtidas/comentários</span></div>
+          <div class="task-item"><div class="task-dot dot-media"></div><span>Comente de forma natural nos top vídeos</span></div>
+          <div class="task-item"><div class="task-dot dot-baixa"></div><span>Siga contas relevantes do nicho</span></div>
+        </div>
+      </div>
+    </div>
+  </div>`;
+}
+
+// ── POSTS ──────────────────────────────────────────────
+async function loadPosts() {
+  const el = document.getElementById('posts-content');
+  try {
+    const posts = await api('/api/posts');
+    if (!posts.length) {
+      el.innerHTML = `<div class="empty-state"><i data-lucide="calendar" style="width:48px;height:48px;"></i><p>Nenhum post agendado</p><span>Agende seu primeiro post na aba "Agendar Post"</span></div>`;
+      lucide.createIcons(); return;
+    }
+    el.innerHTML = `<div class="posts-list">${posts.map(p => renderPostRow(p)).join('')}</div>`;
+    lucide.createIcons();
+  } catch(e) {
+    el.innerHTML = renderError('Erro ao carregar posts', e.message);
+    lucide.createIcons();
+  }
+}
+
+function renderPostRow(p) {
+  const platforms = (p.platforms || []).map(pl =>
+    `<span class="badge badge-${pl}">${pl}</span>`).join('');
+  const dt = p.scheduled_at ? new Date(p.scheduled_at).toLocaleString('pt-BR') : '—';
+  const icon = p.file_type === 'video' ? 'video' : 'image';
+
+  return `
+  <div class="post-row">
+    <div style="color:var(--text3)"><i data-lucide="${icon}" style="width:18px;height:18px;"></i></div>
+    <div class="post-row-info">
+      <div class="post-row-title">${p.title || p.caption?.substring(0,50) || 'Post sem título'}</div>
+      <div class="post-row-meta">${dt}</div>
+    </div>
+    <div class="post-row-platforms">${platforms}</div>
+    <span class="badge badge-${p.status}">${p.status === 'posted' ? '✓ Publicado' : p.status === 'failed' ? '✗ Falhou' : '⏳ Pendente'}</span>
+    <div class="post-row-actions">
+      <button class="btn btn-danger btn-icon btn-sm" onclick="deletePost(${p.id})">
+        <i data-lucide="trash-2" style="width:13px;height:13px;"></i>
+      </button>
+    </div>
+  </div>`;
+}
+
+async function deletePost(id) {
+  if (!confirm('Remover este post agendado?')) return;
+  try {
+    await api(`/api/posts/${id}`, { method: 'DELETE' });
+    toast('Post removido', 'success');
+    loadPosts();
+  } catch(e) {
+    toast('Erro ao remover post', 'error');
+  }
+}
+
+// ── METRICS ────────────────────────────────────────────
+async function loadMetrics() {
+  const el = document.getElementById('metrics-content');
+  try {
+    const [summary, best] = await Promise.all([
+      api('/api/metrics/summary'),
+      api('/api/metrics/best-posts')
+    ]);
+
+    const platforms = [
+      { key: 'instagram', name: 'Instagram', iconClass: 'pi-instagram', icon: 'instagram', color: '#e1306c' },
+      { key: 'facebook', name: 'Facebook', iconClass: 'pi-facebook', icon: 'facebook', color: '#1877f2' },
+      { key: 'tiktok', name: 'TikTok', iconClass: 'pi-tiktok', icon: null, color: '#fff' }
+    ];
+
+    let html = platforms.map(p => {
+      const d = summary[p.key] || {};
+      return `
+      <div class="platform-metrics-block">
+        <div class="platform-metrics-title">
+          <div class="platform-icon ${p.iconClass}">
+            ${p.icon ? `<i data-lucide="${p.icon}" style="width:16px;height:16px;"></i>` : `<svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.32 6.32 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.18 8.18 0 0 0 4.78 1.52V6.75a4.85 4.85 0 0 1-1.01-.06z"/></svg>`}
+          </div>
+          ${p.name}
+          ${d.posts ? `<span class="badge badge-orange" style="margin-left:auto">${d.posts} post${d.posts > 1 ? 's' : ''}</span>` : ''}
+        </div>
+        <div class="metric-cards">
+          ${renderMetric('Visualizações', d.views || 0)}
+          ${renderMetric('Curtidas', d.likes || 0)}
+          ${renderMetric('Comentários', d.comments || 0)}
+          ${renderMetric('Compartilhamentos', d.shares || 0)}
+          ${renderMetric('Alcance', d.reach || 0)}
+          ${renderMetric('Eng. Médio', (d.avg_engagement || 0) + '%')}
+        </div>
+      </div>`;
+    }).join('');
+
+    if (best.length) {
+      html += `
+        <div>
+          <div class="section-title" style="font-size:18px;margin-bottom:14px">Posts com Melhor Performance</div>
+          <div class="posts-list">${best.map(p => `
+            <div class="post-row">
+              <div class="post-row-info">
+                <div class="post-row-title">${p.title || 'Post'}</div>
+                <div class="post-row-meta">${p.scheduled_at ? new Date(p.scheduled_at).toLocaleDateString('pt-BR') : ''}</div>
+              </div>
+              <span class="badge badge-${p.platform}">${p.platform}</span>
+              <div class="stat-row">
+                <span class="stat-chip"><i data-lucide="heart" style="width:11px;height:11px;color:var(--red)"></i>${fmtNum(p.likes)}</span>
+                <span class="stat-chip"><i data-lucide="message-circle" style="width:11px;height:11px"></i>${fmtNum(p.comments)}</span>
+                <span class="stat-chip"><i data-lucide="share-2" style="width:11px;height:11px"></i>${fmtNum(p.shares)}</span>
+              </div>
+            </div>`).join('')}
+          </div>
+        </div>`;
+    }
+
+    if (!Object.values(summary).some(v => v.posts > 0)) {
+      html += `<div class="empty-state"><i data-lucide="bar-chart-2" style="width:48px;height:48px;"></i><p>Métricas aparecerão após os primeiros posts</p></div>`;
+    }
+
+    el.innerHTML = html;
+    lucide.createIcons();
+  } catch(e) {
+    el.innerHTML = renderError('Erro ao carregar métricas', e.message);
+    lucide.createIcons();
+  }
+}
+
+function renderMetric(label, value) {
+  return `
+  <div class="metric-card">
+    <div class="metric-label">${label}</div>
+    <div class="metric-value">${typeof value === 'number' ? fmtNum(value) : value}</div>
+  </div>`;
+}
+
+// ── LIBRARY ────────────────────────────────────────────
+async function loadLibrary() {
+  const el = document.getElementById('library-content');
+  try {
+    const images = await api('/api/images');
+    if (!images.length) {
+      el.innerHTML = `<div class="empty-state"><i data-lucide="image" style="width:48px;height:48px;"></i><p>Nenhuma imagem na biblioteca</p><span>Adicione imagens da Labuu clicando em "Adicionar Imagem"</span></div>`;
+      lucide.createIcons(); return;
+    }
+    el.innerHTML = `<div class="image-grid">${images.map(img => `
+      <div class="image-card">
+        <img src="${img.url}" alt="${img.filename}" class="image-thumb" onerror="this.style.display='none';this.nextElementSibling.style.display='flex'">
+        <div class="image-thumb-placeholder" style="display:none"><i data-lucide="image" style="width:32px;height:32px;"></i></div>
+        <div class="image-info">
+          <div class="image-name">${img.filename}</div>
+          <div class="image-desc">${img.description || 'Sem descrição'}</div>
+        </div>
+        <div class="image-actions" style="display:flex;flex-direction:column;gap:6px">
+          <button class="btn btn-ghost btn-sm" style="width:100%;justify-content:center" data-imgid="${img.id}" data-desc="${escapeAttr(img.description || img.filename)}" onclick="suggestImageCaption(${img.id}, this)">
+            <i data-lucide="sparkles" style="width:12px;height:12px;"></i>
+            Sugerir Legenda
+          </button>
+          <button class="btn btn-danger btn-sm" style="width:100%;justify-content:center" onclick="deleteImage(${img.id})">
+            <i data-lucide="trash-2" style="width:12px;height:12px;"></i>
+            Remover
+          </button>
+        </div>
+        <div id="caption-area-${img.id}" style="display:none;padding:10px 12px;border-top:1px solid var(--border)">
+          <div class="prompt-label" style="margin-bottom:6px">
+            <span>Legenda Sugerida</span>
+            <button class="copy-btn" onclick="copyCaptionArea(${img.id})">
+              <i data-lucide="copy" style="width:13px;height:13px;"></i>
+            </button>
+          </div>
+          <div id="caption-text-${img.id}" style="font-size:12px;color:var(--text2);line-height:1.6;white-space:pre-wrap;word-break:break-word"></div>
+        </div>
+      </div>`).join('')}</div>`;
+    lucide.createIcons();
+  } catch(e) {
+    el.innerHTML = renderError('Erro ao carregar biblioteca', e.message);
+    lucide.createIcons();
+  }
+}
+
+async function uploadBrandImage(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const desc = prompt('Descrição da imagem (opcional):') || '';
+  const form = new FormData();
+  form.append('file', file);
+  form.append('description', desc);
+  form.append('tags', '[]');
+  try {
+    toast('Enviando imagem...', 'info');
+    await fetch('/api/images/upload', { method: 'POST', body: form, headers: authHeaders() });
+    toast('Imagem adicionada!', 'success');
+    loadLibrary();
+  } catch(e) { toast('Erro ao enviar imagem', 'error'); }
+}
+
+async function deleteImage(id) {
+  if (!confirm('Remover esta imagem da biblioteca?')) return;
+  try {
+    await api(`/api/images/${id}`, { method: 'DELETE' });
+    toast('Imagem removida', 'success');
+    loadLibrary();
+  } catch(e) { toast('Erro ao remover imagem', 'error'); }
+}
+
+// ── SETTINGS ───────────────────────────────────────────
+async function loadSettings() {
+  try {
+    const cfg = await api('/api/brand');
+    document.getElementById('cfg-audience').value = cfg.audience || 'ambos';
+    document.getElementById('cfg-tone').value = cfg.tone || '';
+    document.getElementById('cfg-themes').value = (cfg.themes || []).join(', ');
+    document.getElementById('cfg-frequency').value = cfg.weekly_frequency || 7;
+    lucide.createIcons();
+  } catch(e) {}
+}
+
+async function saveSettings(e) {
+  e.preventDefault();
+  const themes = document.getElementById('cfg-themes').value.split(',').map(t => t.trim()).filter(Boolean);
+  const form = new FormData();
+  form.append('audience', document.getElementById('cfg-audience').value);
+  form.append('tone', document.getElementById('cfg-tone').value);
+  form.append('themes', JSON.stringify(themes));
+  form.append('weekly_frequency', document.getElementById('cfg-frequency').value);
+  try {
+    await fetch('/api/brand', { method: 'PUT', body: form, headers: authHeaders() });
+    toast('Configurações salvas!', 'success');
+  } catch(e) { toast('Erro ao salvar', 'error'); }
+}
+
+// ── SCHEDULE POST ──────────────────────────────────────
+let selectedFile = null;
+
+function handleFileSelect(e) {
+  selectedFile = e.target.files[0];
+  updateDropzoneLabel();
+}
+
+function handleDragOver(e) {
+  e.preventDefault();
+  document.getElementById('dropzone').classList.add('drag-over');
+}
+
+function handleDragLeave() {
+  document.getElementById('dropzone').classList.remove('drag-over');
+}
+
+function handleDrop(e) {
+  e.preventDefault();
+  document.getElementById('dropzone').classList.remove('drag-over');
+  selectedFile = e.dataTransfer.files[0];
+  updateDropzoneLabel();
+}
+
+function updateDropzoneLabel() {
+  const label = document.getElementById('dropzone-filename');
+  if (selectedFile) {
+    label.textContent = `✓ ${selectedFile.name}`;
+  }
+}
+
+async function submitScheduledPost(e) {
+  e.preventDefault();
+  if (!selectedFile) { toast('Selecione um arquivo primeiro', 'error'); return; }
+
+  const platforms = [];
+  if (document.getElementById('cb-instagram').checked) platforms.push('instagram');
+  if (document.getElementById('cb-facebook').checked) platforms.push('facebook');
+  if (document.getElementById('cb-tiktok').checked) platforms.push('tiktok');
+  if (!platforms.length) { toast('Selecione ao menos uma plataforma', 'error'); return; }
+
+  const form = new FormData();
+  form.append('file', selectedFile);
+  form.append('title', document.getElementById('post-title').value);
+  form.append('caption', document.getElementById('post-caption').value);
+  form.append('hashtags', document.getElementById('post-hashtags').value);
+  form.append('platforms', JSON.stringify(platforms));
+  form.append('scheduled_at', document.getElementById('post-datetime').value);
+
+  try {
+    toast('Agendando post...', 'info');
+    await fetch('/api/posts/upload', { method: 'POST', body: form, headers: authHeaders() });
+    toast('Post agendado com sucesso!', 'success');
+    document.getElementById('schedule-form').reset();
+    selectedFile = null;
+    document.getElementById('dropzone-filename').textContent = '';
+    navigate('posts');
+  } catch(e) { toast('Erro ao agendar post', 'error'); }
+}
+
+// ── SUGGEST CAPTION (SCHEDULE FORM — usa arquivo selecionado) ──
+async function suggestCaption() {
+  const btn = document.getElementById('btn-suggest-caption');
+  const loadingHTML = '<div class="spinner" style="width:12px;height:12px;border-width:2px;display:inline-block;vertical-align:middle"></div> Analisando...';
+  const origHTML = '<i data-lucide="sparkles" style="width:12px;height:12px;"></i> Sugerir Legenda';
+  if (btn) { btn.disabled = true; btn.innerHTML = loadingHTML; }
+
+  try {
+    let caption = '';
+
+    if (selectedFile) {
+      // Analisa visualmente o arquivo selecionado
+      const form = new FormData();
+      form.append('file', selectedFile);
+      const res = await fetch('/api/content/suggest-caption-from-file', { method: 'POST', body: form, headers: authHeaders() });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      caption = data.caption || '';
+    } else {
+      // Fallback: gera com base no título e hashtags
+      const form = new FormData();
+      form.append('title', document.getElementById('post-title').value);
+      form.append('hashtags', document.getElementById('post-hashtags').value);
+      const res = await fetch('/api/content/suggest-caption', { method: 'POST', body: form, headers: authHeaders() });
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const data = await res.json();
+      caption = data.caption || '';
+    }
+
+    if (caption) {
+      document.getElementById('post-caption').value = caption;
+      toast(selectedFile ? '✨ Legenda gerada a partir do arquivo!' : 'Legenda gerada!', 'success');
+    }
+  } catch(e) {
+    toast('Erro ao gerar legenda', 'error');
+  } finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = origHTML; lucide.createIcons(); }
+  }
+}
+
+// ── SUGGEST CAPTION (BIBLIOTECA — analisa imagem real) ──
+async function suggestImageCaption(imageId, btn) {
+  const captionArea = document.getElementById(`caption-area-${imageId}`);
+  const captionText = document.getElementById(`caption-text-${imageId}`);
+  const origHTML = btn.innerHTML;
+  btn.disabled = true;
+  btn.innerHTML = '<div class="spinner" style="width:12px;height:12px;border-width:2px;display:inline-block;vertical-align:middle"></div> Analisando...';
+  try {
+    const res = await fetch(`/api/images/${imageId}/suggest-caption`, { method: 'POST', headers: authHeaders() });
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    if (data.caption) {
+      captionText.textContent = data.caption;
+      captionArea.style.display = 'block';
+      toast('✨ Legenda gerada pela IA!', 'success');
+    }
+  } catch(e) {
+    toast('Erro ao gerar legenda', 'error');
+  } finally {
+    btn.disabled = false;
+    btn.innerHTML = origHTML;
+    lucide.createIcons();
+  }
+}
+
+function copyCaptionArea(imageId) {
+  const text = document.getElementById(`caption-text-${imageId}`)?.textContent;
+  if (text) copyText(text, null);
+}
+
+// ── GENERATE NOW ───────────────────────────────────────
+async function generateNow() {
+  const btn = document.querySelector('[onclick="generateNow()"]');
+  if (btn) { btn.disabled = true; btn.innerHTML = '<div class="spinner" style="width:14px;height:14px;border-width:2px"></div> Gerando...'; }
+  try {
+    await api('/api/content/generate?slot=morning', { method: 'POST' });
+    toast('Conteúdo gerado!', 'success');
+    if (currentPage === 'dashboard') loadDashboard();
+    else navigate('dashboard');
+  } catch(e) { toast('Erro ao gerar conteúdo', 'error'); }
+  finally {
+    if (btn) { btn.disabled = false; btn.innerHTML = '<i data-lucide="zap" style="width:13px;height:13px;"></i> Gerar Conteúdo'; lucide.createIcons(); }
+  }
+}
+
+// ── UTILS ──────────────────────────────────────────────
+function setDefaultDatetime() {
+  const input = document.getElementById('post-datetime');
+  if (input) {
+    const now = new Date();
+    now.setMinutes(0, 0, 0);
+    now.setHours(now.getHours() + 1);
+    input.value = now.toISOString().slice(0,16);
+  }
+}
+
+function updateLastUpdated() {
+  const el = document.getElementById('last-updated-time');
+  if (el) el.textContent = new Date().toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' });
+}
+
+function fmtNum(n) {
+  if (!n) return '0';
+  if (n >= 1000000) return (n/1000000).toFixed(1) + 'M';
+  if (n >= 1000) return (n/1000).toFixed(1) + 'K';
+  return String(n);
+}
+
+function escapeAttr(s) {
+  return String(s || '').replace(/'/g, "&#39;").replace(/"/g, '&quot;').replace(/\n/g, ' ');
+}
+
+function renderError(title, detail) {
+  return `<div class="empty-state"><i data-lucide="alert-circle" style="width:40px;height:40px;color:var(--red)"></i><p>${title}</p><span style="font-family:var(--font-mono);font-size:11px">${detail}</span></div>`;
+}
+
+// ── COPY ───────────────────────────────────────────────
+function copyText(text, btn) {
+  navigator.clipboard.writeText(text).then(() => {
+    toast('Copiado!', 'success');
+    if (btn) {
+      btn.innerHTML = '<i data-lucide="check" style="width:13px;height:13px;color:var(--green)"></i>';
+      lucide.createIcons();
+      setTimeout(() => { btn.innerHTML = '<i data-lucide="copy" style="width:13px;height:13px;"></i>'; lucide.createIcons(); }, 1500);
+    }
+  });
+}
+
+// ── TOAST ──────────────────────────────────────────────
+function toast(message, type = 'info') {
+  const icons = { success: 'check-circle', error: 'x-circle', info: 'info' };
+  const el = document.createElement('div');
+  el.className = `toast ${type}`;
+  el.innerHTML = `
+    <span class="toast-icon-wrap"><i data-lucide="${icons[type]}" style="width:16px;height:16px;"></i></span>
+    <span>${message}</span>`;
+  document.getElementById('toast-container').appendChild(el);
+  lucide.createIcons();
+  setTimeout(() => el.remove(), 3500);
+}
+</script>
+</body>
+</html>
