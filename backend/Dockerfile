@@ -2,10 +2,17 @@ FROM python:3.11-slim
 
 WORKDIR /app
 
+# Instalar deps antes de copiar código (melhor cache)
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY . .
+
+# Criar usuário não-root para rodar a app
+RUN addgroup --system labuu && adduser --system --ingroup labuu labuu \
+    && chown -R labuu:labuu /app
+
+USER labuu
 
 EXPOSE 8000
 
