@@ -83,7 +83,9 @@ def process_scheduled_posts():
         import os
 
         db = SessionLocal()
-        now = datetime.now(timezone.utc)
+        # Usar naive UTC para comparar com scheduled_at que é armazenado como naive UTC.
+        # Evita problemas com PostgreSQL (TIMESTAMP vs TIMESTAMPTZ) e SQLite.
+        now = datetime.now(timezone.utc).replace(tzinfo=None)
         pending = db.query(ScheduledPost).filter(
             ScheduledPost.status == "pending",
             ScheduledPost.scheduled_at <= now
@@ -250,7 +252,7 @@ def collect_metrics():
         from datetime import datetime, timezone, timedelta
 
         db = SessionLocal()
-        cutoff = datetime.now(timezone.utc) - timedelta(hours=48)
+        cutoff = (datetime.now(timezone.utc) - timedelta(hours=48)).replace(tzinfo=None)
         posts = db.query(ScheduledPost).filter(
             ScheduledPost.status == "posted",
             ScheduledPost.scheduled_at <= cutoff
@@ -358,7 +360,7 @@ def cleanup_old_content():
         from datetime import datetime, timezone, timedelta
 
         db  = SessionLocal()
-        now = datetime.now(timezone.utc)
+        now = datetime.now(timezone.utc).replace(tzinfo=None)   # naive UTC
 
         # Conteúdo diário: apaga tudo com mais de 3 dias
         cutoff_content = (now - timedelta(days=3)).date().isoformat()

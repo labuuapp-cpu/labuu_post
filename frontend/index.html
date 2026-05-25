@@ -1443,6 +1443,7 @@ function loadPageData(page) {
   switch(page) {
     case 'dashboard': loadDashboard(); break;
     case 'engagement': loadEngagement(); break;
+    case 'schedule': setDefaultDatetime(); break;
     case 'posts': loadPosts(); break;
     case 'metrics': loadMetrics(); break;
     case 'library': loadLibrary(); break;
@@ -2139,13 +2140,18 @@ async function submitScheduledPost(e) {
 
   try {
     toast('Agendando post...', 'info');
-    await fetch('/api/posts/upload', { method: 'POST', body: form, headers: authHeaders() });
+    const resp = await fetch('/api/posts/upload', { method: 'POST', body: form, headers: authHeaders() });
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({}));
+      throw new Error(err.detail || `Erro ${resp.status}`);
+    }
     toast('Post agendado com sucesso!', 'success');
     document.getElementById('schedule-form').reset();
+    document.getElementById('file-input').value = '';
     selectedFile = null;
     document.getElementById('dropzone-filename').textContent = '';
     navigate('posts');
-  } catch(e) { toast('Erro ao agendar post', 'error'); }
+  } catch(e) { toast(`Erro ao agendar post: ${e.message}`, 'error'); }
 }
 
 // ── SUGGEST CAPTION (SCHEDULE FORM — usa arquivo selecionado) ──
@@ -2240,7 +2246,9 @@ function setDefaultDatetime() {
     const now = new Date();
     now.setMinutes(0, 0, 0);
     now.setHours(now.getHours() + 1);
-    input.value = now.toISOString().slice(0,16);
+    // Usar horário LOCAL (não UTC) — datetime-local espera horário do browser
+    const pad = n => String(n).padStart(2, '0');
+    input.value = `${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(now.getDate())}T${pad(now.getHours())}:${pad(now.getMinutes())}`;
   }
 }
 
