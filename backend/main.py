@@ -307,7 +307,8 @@ async def upload_and_schedule(
         file_path    = stored_path,
         file_type    = file_type,
         platforms    = json.loads(platforms),
-        scheduled_at = datetime.fromisoformat(scheduled_at),
+        # Normaliza para UTC (remove timezone info, armazena como UTC naive)
+        scheduled_at = datetime.fromisoformat(scheduled_at.replace("Z", "+00:00")).replace(tzinfo=None),
         status       = "pending",
     )
     db.add(post)
