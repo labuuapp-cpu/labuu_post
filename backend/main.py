@@ -31,6 +31,11 @@ ALLOWED_ORIGIN       = os.getenv("ALLOWED_ORIGIN", "*")
 # ─── Auth ─────────────────────────────────────────────────────────────────────
 _api_key_header = APIKeyHeader(name="X-Admin-Token", auto_error=False)
 
+if not ADMIN_TOKEN:
+    print("[CRITICAL WARNING] ADMIN_TOKEN is not set! The API is publicly accessible.")
+elif len(ADMIN_TOKEN) < 8:
+    print("[WARNING] ADMIN_TOKEN is too short. Use a stronger token for better security.")
+
 def require_auth(token: str = Security(_api_key_header)):
     """Protege as rotas da API com token de admin.
     Se ADMIN_TOKEN não estiver configurado, aceita tudo (dev mode)."""
@@ -388,6 +393,97 @@ def metrics_summary(db: Session = Depends(get_db), _=Depends(require_auth)):
             "avg_engagement": round(sum(m.engagement_rate for m in metrics) / len(metrics), 2),
         }
     return result
+
+
+@app.get("/api/metrics/account")
+def account_metrics(_=Depends(require_auth)):
+    """Busca seguidores e dados da conta em tempo real das plataformas."""
+    import requests as _req
+    result = {}
+
+    # ── Instagram ──────────────────────────────────────────────────────────────
+    ig_token = os.getenv("META_ACCESS_TOKEN")
+    ig_id    = os.getenv("INSTAGRAM_ACCOUNT_ID")
+    if ig_token and ig_id:
+        try:
+            res  = _req.get(
+                f"https://graph.facebook.com/v19.0/{ig_id}",
+                params={"fields": "followers_count,media_count,name,username", "access_token": ig_token},
+                timeout=10
+            )
+            data = res.json()
+            if "error" not in data:
+                result["instagram"] = {
+                    "followers": data.get("followers_count", 0),
+                    "posts":     data.get("media_count", 0),
+                    "username":  data.get("username") or data.get("name", ""),
+                }
+            else:
+                result["instagram"] = {"followers": 0, "error": data["error"].get("message", "Erro API")}
+        except Exception as e:
+            result["instagram"] = {"followers": 0, "error": str(e)}
+    else:
+        result["instagram"] = {"followers": 0, "error": "Token/ID não configurado"}
+
+    # ── Facebook ───────────────────────────────────────────────────────────────
+    fb_token = os.getenv("META_PAGE_ACCESS_TOKEN") or os.getenv("META_ACCESS_TOKEN")
+    fb_page  = os.getenv("FACEBOOK_PAGE_ID")
+    if fb_token and fb_page:
+        try:
+            res  = _req.get(
+                f"https://graph.facebook.com/v19.0/{fb_page}",
+                params={"fields": "fan_count,followers_count,name", "access_token": fb_token},
+                timeout=10
+            )
+            data = res.json()
+            if "error" not in data:
+                result["facebook"] = {
+                    "followers": data.get("followers_count") or data.get("fan_count", 0),
+                    "name":      data.get("name", ""),
+                }
+            else:
+                result["facebook"] = {"followers": 0, "error": data["error"].get("message", "Erro API")}
+        except Exception as e:
+            result["facebook"] = {"followers": 0, "error": str(e)}
+    else:
+        result["facebook"] = {"followers": 0, "error": "Token/Page ID não configurado"}
+
+    # ── TikTok ────────────────────────────────────────────────────────────────
+    tt_token = os.getenv("TIKTOK_ACCESS_TOKEN")
+    if tt_token:
+        try:
+            res  = _req.get(
+                "https://open.tiktokapis.com/v2/user/info/",
+                headers={"Authorization": f"Bearer {tt_token}"},
+                params={"fields": "follower_count,following_count,likes_count,video_count,display_name"},
+                timeout=10
+            )
+            data = res.json()
+            user = data.get("data", {}).get("user", {})
+            if user:
+                result["tiktok"] = {
+                    "followers": user.get("follower_count", 0),
+                    "name":      user.get("display_name", ""),
+                }
+            else:
+                result["tiktok"] = {"followers": 0, "error": data.get("error", {}).get("message", "Erro API")}
+        except Exception as e:
+            result["tiktok"] = {"followers": 0, "error": str(e)}
+    else:
+        result["tiktok"] = {"followers": 0, "error": "Token TikTok não configurado"}
+
+    return result
+
+
+@app.post("/api/metrics/collect")
+def trigger_metrics_collect(_=Depends(require_auth)):
+    """Dispara coleta manual de métricas (não aguarda o cron das 10h)."""
+    from scheduler import collect_metrics
+    try:
+        collect_metrics()
+        return {"ok": True, "message": "Coleta de métricas iniciada"}
+    except Exception as e:
+        raise HTTPException(500, f"Erro na coleta: {e}")
 
 
 @app.get("/api/metrics/best-posts")
