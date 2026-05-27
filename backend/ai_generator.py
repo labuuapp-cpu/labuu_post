@@ -100,33 +100,62 @@ Responda APENAS com um JSON válido neste formato exato:
 
 
 def generate_engagement_suggestions(platform: str, posts: list, db=None) -> list:
-    if not posts:
-        return []
+    """Gera sugestões de engajamento.
+    Se posts reais estiverem disponíveis, usa-os. Caso contrário, gera sugestões
+    estratégicas baseadas nas hashtags do nicho (API pública requer aprovação Meta).
+    """
+    HASHTAGS_IG = [
+        "construcaocivil", "pedreiro", "obra", "maodeobra",
+        "construção", "reformas", "obraresidencial", "pedreirodeconfiança"
+    ]
+    HASHTAGS_FB = [
+        "construção civil", "pedreiro", "obra", "mão de obra"
+    ]
 
-    posts_text = "\n".join([
-        f"- @{p.get('username', 'user')}: \"{p.get('caption', '')[:100]}\" ({p.get('likes', 0)} curtidas, {p.get('comments', 0)} comentários) — URL: {p.get('url', '')}"
-        for p in posts[:5]
-    ])
+    if posts:
+        # Caminho com posts reais (caso a API esteja disponível)
+        posts_text = "\n".join([
+            f"- @{p.get('username', p.get('hashtag', 'user'))}: \"{p.get('caption', '')[:100]}\" "
+            f"({p.get('likes', 0)} curtidas) — URL: {p.get('url', p.get('post_url', ''))}"
+            for p in posts[:5]
+        ])
+        context = f"Posts em alta no {platform} do nicho:\n{posts_text}"
+    else:
+        # Caminho sem posts reais — gera sugestões estratégicas por hashtag
+        if platform.lower() == "instagram":
+            tags = HASHTAGS_IG[:6]
+            urls = [f"https://www.instagram.com/explore/tags/{t}/" for t in tags]
+        else:
+            tags = HASHTAGS_FB[:4]
+            urls = [f"https://www.facebook.com/search/posts/?q={t.replace(' ', '+')}" for t in tags]
+
+        context = f"""A API pública de busca de posts do {platform} requer aprovação especial (não disponível ainda).
+Gere sugestões de engajamento ESTRATÉGICAS para o nicho, com:
+- Hashtags/tópicos para buscar manualmente
+- Modelos de comentário prontos para usar
+- Links diretos para explorar o nicho
+
+Hashtags/tópicos do nicho: {', '.join(f'#{t}' for t in tags)}
+URLs para busca: {chr(10).join(urls)}"""
 
     prompt = f"""Você é especialista em marketing para construção civil.
 {BRAND_CONTEXT}
 
-Posts em alta no {platform} do nicho de construção civil:
-{posts_text}
+{context}
 
-Para cada post, sugira um comentário natural e estratégico que:
-1. Agrega valor à conversa
-2. Apresenta ou reforça a Labuu de forma não invasiva
-3. Soa como uma pessoa real, não como propaganda
+Gere {6 if not posts else 5} sugestões de engajamento. Cada sugestão deve ter:
+1. Um comentário natural e estratégico que agrega valor e menciona a Labuu de forma sutil
+2. Um link direto (URL real) para onde buscar posts
+3. Uma razão clara de por que vale a pena engajar ali
 
-Responda APENAS com JSON válido:
+Responda APENAS com JSON válido (sem markdown):
 [
   {{
-    "post_url": "url do post",
-    "username": "@usuario",
+    "post_url": "URL real para a hashtag ou busca",
+    "username": "nome da hashtag ou tópico (ex: #construcaocivil)",
     "priority": "alta" ou "media",
-    "reason": "por que comentar aqui vale a pena (1 frase)",
-    "suggested_comment": "o comentário sugerido"
+    "reason": "por que engajar aqui vale a pena (1 frase)",
+    "suggested_comment": "comentário sugerido pronto para usar"
   }}
 ]"""
 
