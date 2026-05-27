@@ -2113,17 +2113,22 @@ async function loadLibrary() {
 async function uploadBrandImage(event) {
   const file = event.target.files[0];
   if (!file) return;
-  const desc = prompt('Descrição da imagem (opcional):') || '';
+  // Resetar o input imediatamente para permitir re-upload do mesmo arquivo
+  event.target.value = '';
   const form = new FormData();
   form.append('file', file);
-  form.append('description', desc);
+  form.append('description', '');
   form.append('tags', '[]');
   try {
     toast('Enviando imagem...', 'info');
-    await fetch('/api/images/upload', { method: 'POST', body: form, headers: authHeaders() });
+    const resp = await fetch('/api/images/upload', { method: 'POST', body: form, headers: authHeaders() });
+    if (!resp.ok) {
+      const err = await resp.json().catch(() => ({}));
+      throw new Error(err.detail || `Erro ${resp.status}`);
+    }
     toast('Imagem adicionada!', 'success');
     loadLibrary();
-  } catch(e) { toast('Erro ao enviar imagem', 'error'); }
+  } catch(e) { toast('Erro ao enviar imagem: ' + e.message, 'error'); }
 }
 
 async function deleteImage(id) {
@@ -2166,6 +2171,8 @@ let selectedFile = null;
 
 function handleFileSelect(e) {
   selectedFile = e.target.files[0];
+  // Resetar value para permitir selecionar o mesmo arquivo de novo
+  e.target.value = '';
   updateDropzoneLabel();
 }
 
