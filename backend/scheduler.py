@@ -270,12 +270,19 @@ def collect_metrics():
 
 
 def _collect_post_metrics(post, db):
-    """Coleta e salva (ou atualiza) métricas de um post em todas as plataformas publicadas."""
-    from models import PostMetrics
-    from social.instagram import get_post_metrics as ig_metrics
-    from social.facebook import get_post_metrics as fb_metrics
+    """Coleta e salva (ou atualiza) métricas de um post em todas as plataformas publicadas.
 
-    post_ids = post.post_ids or {}
+    Estratégia de fallback para IDs inválidos:
+    - Instagram: se o ID armazenado falhar, busca a mídia real por timestamp
+    - Facebook: se o ID não for compound (photo object ID), busca o post real por timestamp
+    """
+    from models import PostMetrics
+    from sqlalchemy.orm.attributes import flag_modified
+    from social.instagram import get_post_metrics as ig_metrics, find_media_by_timestamp as ig_find
+    from social.facebook import get_post_metrics as fb_metrics, find_post_by_timestamp as fb_find
+
+    post_ids = dict(post.post_ids or {})
+    ids_updated = False
 
     def _upsert(platform: str, **values):
         """Atualiza registro existente ou insere novo."""
@@ -294,15 +301,28 @@ def _collect_post_metrics(post, db):
     if ig_id and not str(ig_id).startswith("error"):
         try:
             m = ig_metrics(ig_id)
-            _upsert(
-                "instagram",
-                views=m.get("plays", 0) or m.get("impressions", 0),
-                likes=m.get("likes", 0),
-                comments=m.get("comments", 0),
-                shares=m.get("shares", 0),
-                reach=m.get("reach", 0),
-            )
-            logger.info(f"Post {post.id} IG metrics: {m}")
+
+            # Se o ID armazenado for inválido (retornou {}), tenta buscar por timestamp
+            if not m and post.scheduled_at:
+                logger.warning(f"Post {post.id}: IG ID {ig_id} inválido, buscando por timestamp...")
+                real_id = ig_find(post.scheduled_at, window_minutes=120)
+                if real_id:
+                    m = ig_metrics(real_id)
+                    if m:
+                        post_ids["instagram"] = real_id
+                        ids_updated = True
+                        logger.info(f"Post {post.id}: IG ID corrigido para {real_id}")
+
+            if m:
+                _upsert(
+                    "instagram",
+                    views=m.get("impressions", 0) or m.get("plays", 0),
+                    likes=m.get("likes", 0),
+                    comments=m.get("comments", 0),
+                    shares=m.get("shares", 0),
+                    reach=m.get("reach", 0),
+                )
+                logger.info(f"Post {post.id} IG metrics: {m}")
         except Exception as e:
             logger.error(f"Erro ao coletar métricas IG do post {post.id}: {e}")
 
@@ -310,7 +330,18 @@ def _collect_post_metrics(post, db):
     fb_id = post_ids.get("facebook", "")
     if fb_id and not str(fb_id).startswith("error"):
         try:
-            m = fb_metrics(fb_id)
+            # IDs de foto (sem '_') não suportam reactions — tenta encontrar compound post ID
+            effective_fb_id = str(fb_id)
+            if "_" not in effective_fb_id and post.scheduled_at:
+                logger.info(f"Post {post.id}: FB ID {fb_id} não é compound, buscando por timestamp...")
+                compound_id = fb_find(post.scheduled_at, window_minutes=120)
+                if compound_id:
+                    effective_fb_id = compound_id
+                    post_ids["facebook"] = compound_id
+                    ids_updated = True
+                    logger.info(f"Post {post.id}: FB ID corrigido para {compound_id}")
+
+            m = fb_metrics(effective_fb_id)
             _upsert(
                 "facebook",
                 views=m.get("post_impressions", 0),
@@ -322,6 +353,11 @@ def _collect_post_metrics(post, db):
             logger.info(f"Post {post.id} FB metrics: {m}")
         except Exception as e:
             logger.error(f"Erro ao coletar métricas FB do post {post.id}: {e}")
+
+    # Persiste IDs corrigidos se houve atualização
+    if ids_updated:
+        post.post_ids = post_ids
+        flag_modified(post, "post_ids")
 
     db.commit()
 
