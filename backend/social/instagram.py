@@ -115,16 +115,28 @@ def get_post_metrics(media_id: str) -> dict:
         logger.error(f"Erro ao buscar fields da mídia IG {media_id}: {e}")
         return {}
 
-    # 2. Impressões, alcance, shares e saves via Insights (opcional, requer permissão)
+    # 2. Alcance, shares, saves e total_interactions via Insights API v22+
+    # Nota: 'impressions' foi depreciado na v22 para mídias individuais
     try:
         res = requests.get(f"{BASE_URL}/{media_id}/insights", params={
-            "metric": "impressions,reach,shares,saved",
+            "metric": "reach,shares,saved,total_interactions",
             "access_token": ACCESS_TOKEN
         })
         data = res.json()
         if "error" not in data:
             for item in data.get("data", []):
-                metrics[item["name"]] = item.get("values", [{}])[0].get("value", 0)
+                val = item.get("values", [{}])[0].get("value", 0)
+                name = item["name"]
+                metrics[name] = val
+            # Mapeamento para campos internos usados pelo sistema
+            if "reach" in metrics:
+                metrics["reach"] = metrics["reach"]
+            if "shares" in metrics:
+                metrics["shares"] = metrics["shares"]
+            # total_interactions = curtidas + saves + comentários + shares
+            # Usamos como proxy de views quando impressions não está disponível
+            if metrics.get("total_interactions", 0) > 0 and metrics.get("likes", 0) == 0:
+                metrics["likes"] = metrics["total_interactions"]
     except Exception:
         pass  # insights é opcional
 

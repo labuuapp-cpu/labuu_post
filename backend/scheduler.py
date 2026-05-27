@@ -326,7 +326,8 @@ def _collect_post_metrics(post, db):
             if m:
                 _upsert(
                     "instagram",
-                    views=m.get("impressions", 0) or m.get("plays", 0),
+                    # v22+: impressions depreciado — reach é o principal indicador de alcance
+                    views=m.get("total_interactions", 0) or m.get("plays", 0),
                     likes=m.get("likes", 0),
                     comments=m.get("comments", 0),
                     shares=m.get("shares", 0),
