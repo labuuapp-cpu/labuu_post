@@ -246,18 +246,21 @@ def _publish_post(post, db):
 
 
 def collect_metrics():
+    """Coleta métricas de engajamento de todos os posts publicados.
+
+    Inclui posts com status 'posted' e 'partial' (publicado em pelo menos uma plataforma).
+    Sem cutoff mínimo de tempo — coleta a qualquer momento.
+    """
     try:
         from database import SessionLocal
         from models import ScheduledPost, PostMetrics
-        from datetime import datetime, timezone, timedelta
 
         db = SessionLocal()
-        cutoff = (datetime.now(timezone.utc) - timedelta(hours=48)).replace(tzinfo=None)
         posts = db.query(ScheduledPost).filter(
-            ScheduledPost.status == "posted",
-            ScheduledPost.scheduled_at <= cutoff
+            ScheduledPost.status.in_(["posted", "partial"])
         ).all()
 
+        logger.info(f"[collect_metrics] {len(posts)} posts para coletar métricas")
         for post in posts:
             _collect_post_metrics(post, db)
 
@@ -267,33 +270,58 @@ def collect_metrics():
 
 
 def _collect_post_metrics(post, db):
+    """Coleta e salva (ou atualiza) métricas de um post em todas as plataformas publicadas."""
     from models import PostMetrics
     from social.instagram import get_post_metrics as ig_metrics
     from social.facebook import get_post_metrics as fb_metrics
-    from social.tiktok import get_video_metrics as tt_metrics
 
     post_ids = post.post_ids or {}
 
-    if "instagram" in post_ids and post_ids["instagram"]:
-        m = ig_metrics(post_ids["instagram"])
-        db.add(PostMetrics(
-            scheduled_post_id=post.id,
-            platform="instagram",
-            views=m.get("plays", 0),
-            likes=m.get("likes", 0),
-            comments=m.get("comments", 0),
-            shares=m.get("shares", 0),
-            reach=m.get("reach", 0)
-        ))
+    def _upsert(platform: str, **values):
+        """Atualiza registro existente ou insere novo."""
+        existing = db.query(PostMetrics).filter(
+            PostMetrics.scheduled_post_id == post.id,
+            PostMetrics.platform == platform
+        ).first()
+        if existing:
+            for k, v in values.items():
+                setattr(existing, k, v)
+        else:
+            db.add(PostMetrics(scheduled_post_id=post.id, platform=platform, **values))
 
-    if "facebook" in post_ids and post_ids["facebook"]:
-        m = fb_metrics(post_ids["facebook"])
-        db.add(PostMetrics(
-            scheduled_post_id=post.id,
-            platform="facebook",
-            reach=m.get("post_reach", 0),
-            views=m.get("post_impressions", 0)
-        ))
+    # ── Instagram ─────────────────────────────────────────────────────────────
+    ig_id = post_ids.get("instagram", "")
+    if ig_id and not str(ig_id).startswith("error"):
+        try:
+            m = ig_metrics(ig_id)
+            _upsert(
+                "instagram",
+                views=m.get("plays", 0) or m.get("impressions", 0),
+                likes=m.get("likes", 0),
+                comments=m.get("comments", 0),
+                shares=m.get("shares", 0),
+                reach=m.get("reach", 0),
+            )
+            logger.info(f"Post {post.id} IG metrics: {m}")
+        except Exception as e:
+            logger.error(f"Erro ao coletar métricas IG do post {post.id}: {e}")
+
+    # ── Facebook ──────────────────────────────────────────────────────────────
+    fb_id = post_ids.get("facebook", "")
+    if fb_id and not str(fb_id).startswith("error"):
+        try:
+            m = fb_metrics(fb_id)
+            _upsert(
+                "facebook",
+                views=m.get("post_impressions", 0),
+                likes=m.get("likes", 0),
+                comments=m.get("comments", 0),
+                shares=m.get("shares", 0),
+                reach=m.get("post_reach", 0),
+            )
+            logger.info(f"Post {post.id} FB metrics: {m}")
+        except Exception as e:
+            logger.error(f"Erro ao coletar métricas FB do post {post.id}: {e}")
 
     db.commit()
 

@@ -50,15 +50,45 @@ def get_page_insights() -> dict:
 
 
 def get_post_metrics(post_id: str) -> dict:
-    url = f"{BASE_URL}/{post_id}/insights"
-    res = requests.get(url, params={
-        "metric": "post_impressions,post_reach,post_reactions_by_type_total,post_clicks",
-        "access_token": ACCESS_TOKEN
-    })
-    data = res.json()
+    """Busca métricas de engajamento de um post do Facebook.
+
+    Usa dois endpoints:
+    1. Fields API (/{post_id}?fields=...) — curtidas, comentários, shares (mais confiável)
+    2. Insights API (/{post_id}/insights) — impressões e alcance
+    """
     metrics = {}
-    for item in data.get("data", []):
-        metrics[item["name"]] = item.get("values", [{}])[0].get("value", 0)
+
+    # 1. Curtidas, comentários e compartilhamentos via fields (dados públicos do post)
+    try:
+        res = requests.get(f"{BASE_URL}/{post_id}", params={
+            "fields": "reactions.summary(true),comments.summary(true),shares",
+            "access_token": ACCESS_TOKEN
+        })
+        data = res.json()
+        if "error" not in data:
+            metrics["likes"]    = data.get("reactions", {}).get("summary", {}).get("total_count", 0)
+            metrics["comments"] = data.get("comments",  {}).get("summary", {}).get("total_count", 0)
+            metrics["shares"]   = data.get("shares",    {}).get("count", 0) if "shares" in data else 0
+        else:
+            logger.warning(f"Erro ao buscar fields do post FB {post_id}: {data['error'].get('message')}")
+    except Exception as e:
+        logger.error(f"Erro ao buscar fields do post FB {post_id}: {e}")
+
+    # 2. Impressões e alcance via Insights API (requer permissão read_insights)
+    try:
+        res = requests.get(f"{BASE_URL}/{post_id}/insights", params={
+            "metric": "post_impressions,post_reach",
+            "access_token": ACCESS_TOKEN
+        })
+        data = res.json()
+        if "error" not in data:
+            for item in data.get("data", []):
+                metrics[item["name"]] = item.get("values", [{}])[0].get("value", 0)
+        else:
+            logger.warning(f"Insights indisponível para post FB {post_id}: {data['error'].get('message')}")
+    except Exception as e:
+        logger.error(f"Erro ao buscar insights do post FB {post_id}: {e}")
+
     return metrics
 
 
