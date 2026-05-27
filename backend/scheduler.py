@@ -285,7 +285,17 @@ def _collect_post_metrics(post, db):
     ids_updated = False
 
     def _upsert(platform: str, **values):
-        """Atualiza registro existente ou insere novo."""
+        """Atualiza registro existente ou insere novo, calculando engagement_rate."""
+        # Calcula taxa de engajamento: (curtidas + comentários*2 + shares*3) / alcance * 100
+        likes    = values.get("likes", 0) or 0
+        comments = values.get("comments", 0) or 0
+        shares   = values.get("shares", 0) or 0
+        reach    = values.get("reach", 0) or 0
+        total_eng = likes + comments * 2 + shares * 3
+        # Se não temos alcance, usamos curtidas+comentários como proxy (>0 para evitar /0)
+        denominator = reach if reach > 0 else max(total_eng, 1)
+        values["engagement_rate"] = round((total_eng / denominator) * 100, 2) if total_eng > 0 else 0.0
+
         existing = db.query(PostMetrics).filter(
             PostMetrics.scheduled_post_id == post.id,
             PostMetrics.platform == platform
