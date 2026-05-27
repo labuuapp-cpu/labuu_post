@@ -1,12 +1,33 @@
 import os
 import requests
+import time
+import logging
 from dotenv import load_dotenv
 
+logger = logging.getLogger(__name__)
 load_dotenv()
 
 ACCESS_TOKEN = os.getenv("META_ACCESS_TOKEN")
 IG_ACCOUNT_ID = os.getenv("INSTAGRAM_ACCOUNT_ID")
 BASE_URL = "https://graph.facebook.com/v19.0"
+
+
+def _wait_for_media(container_id: str, timeout: int = 60) -> bool:
+    """Aguarda o processamento da mídia pela Meta."""
+    start_time = time.time()
+    while time.time() - start_time < timeout:
+        res = requests.get(f"{BASE_URL}/{container_id}", params={
+            "fields": "status_code",
+            "access_token": ACCESS_TOKEN
+        })
+        status = res.json()
+        if status.get("status_code") == "FINISHED":
+            return True
+        if status.get("status_code") == "ERROR":
+            logger.error(f"Erro no processamento da mídia {container_id}: {status}")
+            return False
+        time.sleep(5)
+    return False
 
 
 def post_video(video_url: str, caption: str) -> dict:
@@ -20,6 +41,10 @@ def post_video(video_url: str, caption: str) -> dict:
     container = res.json()
     if "id" not in container:
         return {"error": container}
+
+    # Reels sempre precisam aguardar processamento
+    if not _wait_for_media(container["id"]):
+        return {"error": "Timeout ou erro no processamento do vídeo"}
 
     publish_url = f"{BASE_URL}/{IG_ACCOUNT_ID}/media_publish"
     pub = requests.post(publish_url, data={
@@ -40,12 +65,27 @@ def post_image(image_url: str, caption: str) -> dict:
     if "id" not in container:
         return {"error": container}
 
+    # Aguarda um pouco para garantir que a imagem foi baixada pela Meta
+    time.sleep(10)
+
     publish_url = f"{BASE_URL}/{IG_ACCOUNT_ID}/media_publish"
     pub = requests.post(publish_url, data={
         "creation_id": container["id"],
         "access_token": ACCESS_TOKEN
     })
-    return pub.json()
+    
+    # Se falhar porque a mídia ainda não está pronta, tenta mais uma vez
+    data = pub.json()
+    if "error" in data and data["error"].get("error_subcode") == 2207027:
+        logger.info("Mídia não pronta, tentando novamente em 15 segundos...")
+        time.sleep(15)
+        pub = requests.post(publish_url, data={
+            "creation_id": container["id"],
+            "access_token": ACCESS_TOKEN
+        })
+        return pub.json()
+        
+    return data
 
 
 def get_post_metrics(media_id: str) -> dict:

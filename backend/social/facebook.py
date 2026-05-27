@@ -1,10 +1,13 @@
 import os
 import requests
+import logging
 from dotenv import load_dotenv
 
+logger = logging.getLogger(__name__)
 load_dotenv()
 
-ACCESS_TOKEN = os.getenv("META_ACCESS_TOKEN")
+# Tenta usar o token específico da página, senão usa o token geral da Meta
+ACCESS_TOKEN = os.getenv("META_PAGE_ACCESS_TOKEN") or os.getenv("META_ACCESS_TOKEN")
 PAGE_ID = os.getenv("FACEBOOK_PAGE_ID")
 BASE_URL = "https://graph.facebook.com/v19.0"
 
@@ -17,7 +20,10 @@ def post_video(video_path: str, caption: str, title: str = "") -> dict:
             "title": title,
             "access_token": ACCESS_TOKEN
         }, files={"source": f})
-    return res.json()
+    data = res.json()
+    if "error" in data:
+        logger.error(f"Erro Facebook Video API: {data}")
+    return data
 
 
 def post_image(image_path: str, caption: str) -> dict:
@@ -27,7 +33,10 @@ def post_image(image_path: str, caption: str) -> dict:
             "caption": caption,
             "access_token": ACCESS_TOKEN
         }, files={"source": f})
-    return res.json()
+    data = res.json()
+    if "error" in data:
+        logger.error(f"Erro Facebook Image API: {data}")
+    return data
 
 
 def get_page_insights() -> dict:
